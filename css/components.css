@@ -165,7 +165,7 @@ select.control {
   color: var(--brand-400);
 }
 
-/* --- Card outline button (NRG-style) --- */
+/* --- Card outline button --- */
 .btn--card {
   background: #fff;
   color: var(--ink-700);

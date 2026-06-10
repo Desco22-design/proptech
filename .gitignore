@@ -15,3 +15,15 @@ _*.html
 _*.css
 _*.jpg
 *.tmp
+
+# Dependencies
+node_modules/
+package.json
+package-lock.json
+
+# Debug screenshots and scripts
+nrg-*.png
+pt-*.png
+proptech-*.png
+screenshot*.js
+ss_stat.js

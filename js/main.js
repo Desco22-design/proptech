@@ -67,8 +67,11 @@
   });
   lang.querySelectorAll(".lang__option").forEach((opt) => {
     opt.addEventListener("click", () => {
-      langToggle.querySelector("span").textContent = opt.textContent;
+      const img = langToggle.querySelector(".lang__flag img");
+      img.src = opt.dataset.flagSrc;
+      img.alt = opt.dataset.flagAlt;
       lang.classList.remove("is-open");
+      langToggle.setAttribute("aria-expanded", "false");
     });
   });
   document.addEventListener("click", () => lang.classList.remove("is-open"));

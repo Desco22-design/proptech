@@ -1,0 +1,967 @@
+/* ============================================================
+   PropTech — Modal system
+   ============================================================ */
+
+/* ── Overlay ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(14, 19, 48, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.modal-overlay[hidden] { display: none; }
+
+.modal-overlay.is-open { opacity: 1; }
+
+/* ── Modal box ── */
+.modal {
+  position: relative;
+  background: #fff;
+  border-radius: 24px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.22);
+}
+
+.modal-overlay.is-open .modal { transform: none; }
+
+.modal__body {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.modal[data-size="sm"] { max-width: 500px; }
+.modal[data-size="md"] { max-width: 700px; }
+.modal[data-size="lg"] { max-width: 980px; }
+
+/* ── Close btn ── */
+.modal__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 20;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-700);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  backdrop-filter: blur(6px);
+}
+
+.modal__close:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+/* ─────────────────────────────────────────────
+   PROJECT DETAIL
+───────────────────────────────────────────── */
+.m-project__hero {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  flex-shrink: 0;
+}
+
+.m-project__hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.m-project__tags {
+  position: absolute;
+  top: 1rem;
+  left: 1.5rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.m-project__info { padding: 1.75rem 2rem 2rem; }
+
+.m-project__name {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--ink-900);
+  margin-bottom: 0.4rem;
+  line-height: 1.1;
+}
+
+.m-project__addr {
+  color: var(--ink-500);
+  margin-bottom: 1.5rem;
+  font-size: 0.9375rem;
+}
+
+.m-project__specs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.m-spec {
+  background: #f4f6ff;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.m-spec__label {
+  font-size: 0.675rem;
+  font-weight: 700;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.m-spec__val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.m-project__rooms {
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--ink-700);
+}
+
+.m-project__rooms-label {
+  color: var(--ink-400);
+  margin-right: 0.25rem;
+}
+
+.m-project__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ─────────────────────────────────────────────
+   FLOOR PLANS
+───────────────────────────────────────────── */
+.m-floors { padding: 2rem; }
+
+.m-floors__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  padding-top: 0.5rem;
+}
+
+.m-floors__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 1rem;
+}
+
+.m-floor-card {
+  border: 1.5px solid var(--line-200);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.m-floor-card:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.m-floor-card__plan {
+  padding: 0.75rem;
+  background: #f8faff;
+}
+
+.m-floor-card__plan svg { width: 100%; height: auto; display: block; }
+
+.m-floor-card__info { padding: 0.75rem 1rem 1rem; }
+
+.m-floor-card__type {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--ink-900);
+}
+
+.m-floor-card__area {
+  font-size: 0.8125rem;
+  color: var(--ink-500);
+  margin-top: 0.15rem;
+}
+
+.m-floor-card__price {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--brand-600);
+  margin-top: 0.4rem;
+}
+
+/* ─────────────────────────────────────────────
+   ONLINE PURCHASE
+───────────────────────────────────────────── */
+.m-online { padding: 2rem; }
+
+.m-online__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+  padding-top: 0.5rem;
+}
+
+.m-online__sub {
+  color: var(--ink-500);
+  margin-bottom: 2rem;
+}
+
+.m-online__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.m-step {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.m-step__num {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--brand-600);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m-step__title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--ink-900);
+}
+
+.m-step__text {
+  font-size: 0.875rem;
+  color: var(--ink-500);
+  line-height: 1.6;
+}
+
+/* ─────────────────────────────────────────────
+   PROMO
+───────────────────────────────────────────── */
+.m-promo {
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+}
+
+.m-promo__badge {
+  display: inline-block;
+  background: rgba(0, 96, 254, 0.08);
+  color: var(--brand-600);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 0.35rem 0.9rem;
+  border-radius: 100px;
+  margin-bottom: 1rem;
+}
+
+.m-promo__title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+}
+
+.m-promo__terms {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.m-promo__term { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.m-promo__term-val {
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: var(--brand-600);
+  line-height: 1;
+}
+
+.m-promo__term-label {
+  font-size: 0.8125rem;
+  color: var(--ink-500);
+}
+
+.m-promo__note {
+  font-size: 0.8125rem;
+  color: var(--ink-400);
+  margin-bottom: 1.75rem;
+}
+
+/* ─────────────────────────────────────────────
+   MORTGAGE
+───────────────────────────────────────────── */
+.m-mortgage { padding: 2rem; }
+
+.m-mortgage__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+  padding-top: 0.5rem;
+}
+
+.m-mortgage__sub { color: var(--ink-500); margin-bottom: 1.5rem; }
+
+.m-mortgage__banks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.m-bank {
+  border: 1.5px solid var(--line-200);
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  transition: border-color 0.15s;
+}
+
+.m-bank:hover { border-color: var(--brand-400); }
+
+.m-bank__name { font-weight: 700; font-size: 0.9375rem; margin-bottom: 0.4rem; }
+.m-bank__rate { color: var(--brand-600); font-weight: 600; font-size: 0.875rem; }
+.m-bank__term { color: var(--ink-500); font-size: 0.8125rem; margin-top: 0.2rem; }
+
+/* ─────────────────────────────────────────────
+   PARTNERS
+───────────────────────────────────────────── */
+.m-partners { padding: 2rem; }
+
+.m-partners__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+  padding-top: 0.5rem;
+}
+
+.m-partners__sub { color: var(--ink-500); margin-bottom: 1.5rem; }
+
+.m-partners__perks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.m-perk {
+  background: #f8faff;
+  border-radius: 16px;
+  padding: 1.4rem;
+}
+
+.m-perk__icon { font-size: 1.5rem; margin-bottom: 0.6rem; }
+.m-perk h3 { font-size: 0.9375rem; font-weight: 700; margin-bottom: 0.3rem; }
+.m-perk p { font-size: 0.8125rem; color: var(--ink-500); line-height: 1.55; }
+
+/* ─────────────────────────────────────────────
+   INVEST
+───────────────────────────────────────────── */
+.m-invest { padding: 2rem; }
+
+.m-invest__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+  padding-top: 0.5rem;
+}
+
+.m-invest__sub { color: var(--ink-500); margin-bottom: 1.5rem; }
+
+.m-invest__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.m-invest__stat {
+  background: rgba(0, 96, 254, 0.06);
+  border-radius: 14px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.m-invest__stat-val {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--brand-600);
+  margin-bottom: 0.3rem;
+}
+
+.m-invest__stat-label { font-size: 0.75rem; color: var(--ink-500); }
+.m-invest__text { color: var(--ink-600, #4a5568); line-height: 1.7; margin-bottom: 1.5rem; }
+
+/* ─────────────────────────────────────────────
+   INFRA
+───────────────────────────────────────────── */
+.m-infra { padding: 2rem; }
+
+.m-infra__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+  padding-top: 0.5rem;
+}
+
+.m-infra__sub { color: var(--ink-500); margin-bottom: 1.5rem; }
+
+.m-infra__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.m-infra__item {
+  background: #f8faff;
+  border-radius: 12px;
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-700);
+}
+
+.m-infra__emoji { font-size: 1.75rem; }
+
+/* ─────────────────────────────────────────────
+   PRIVACY
+───────────────────────────────────────────── */
+.m-privacy { padding: 2rem; }
+
+.m-privacy__title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 1.25rem;
+  padding-top: 0.5rem;
+}
+
+.m-privacy__text h3 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.4rem;
+  color: var(--ink-900);
+}
+
+.m-privacy__text p {
+  font-size: 0.875rem;
+  color: var(--ink-600, #4a5568);
+  line-height: 1.7;
+}
+
+/* ─────────────────────────────────────────────
+   MODAL RESPONSIVE
+───────────────────────────────────────────── */
+@media (max-width: 680px) {
+  .m-project__hero { height: 200px; }
+  .m-project__name { font-size: 1.4rem; }
+  .m-project__specs { grid-template-columns: 1fr 1fr; }
+  .m-project__info { padding: 1.25rem 1.25rem 1.5rem; }
+  .m-mortgage__banks { grid-template-columns: 1fr; }
+  .m-partners__perks { grid-template-columns: 1fr; }
+  .m-invest__stats { grid-template-columns: 1fr 1fr; }
+  .m-infra__grid { grid-template-columns: repeat(2, 1fr); }
+  .m-promo__terms { gap: 1.5rem; }
+  .m-floors { padding: 1.25rem; }
+  .m-floors__title { padding-top: 0; }
+}
+
+/* ============================================================
+   PAGE PANEL — full-screen slide-in from right
+   ============================================================ */
+
+/* pp-bg unused — panel is full-screen */
+.pp-bg { display: none; }
+
+.page-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 860;
+  background: #fff;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.28s, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+.page-panel[hidden] { display: none; }
+.page-panel.is-open { opacity: 1; transform: none; }
+
+/* Header */
+.pp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.75rem;
+  border-bottom: 1px solid var(--line-200);
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.pp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink-600);
+  cursor: pointer;
+  transition: color 0.15s;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  margin-left: -0.75rem;
+}
+.pp-back:hover { color: var(--brand-600); background: #f0f4ff; }
+
+/* Body */
+.pp-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: #f6f8fc;
+}
+
+/* Content width constraint — all inner pages are centered */
+.pp-content,
+.pp-section,
+.pp-cta,
+.pp-promos,
+.pp-mortgage,
+.pp-partners,
+.pp-online {
+  width: 100%;
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+/* ─── PROJECT PAGE ─── */
+.pp-hero {
+  position: relative;
+  height: 420px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.pp-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pp-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%);
+}
+.pp-hero__tags {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.75rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.pp-content { padding: 2.25rem 2.5rem 2rem; background: #fff; }
+
+.pp-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--ink-900);
+  margin-bottom: 0.4rem;
+  line-height: 1.1;
+}
+.pp-addr {
+  color: var(--ink-500);
+  font-size: 0.9375rem;
+  margin-bottom: 1.75rem;
+}
+
+.pp-specs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+.pp-spec {
+  background: #f4f6ff;
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+}
+.pp-spec__label {
+  font-size: 0.675rem;
+  font-weight: 700;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.pp-spec__val {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.pp-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 2rem;
+  margin-bottom: 0;
+}
+
+.pp-section {
+  padding: 2rem 2.5rem;
+  background: #fff;
+  border-top: 1px solid var(--line-100);
+}
+.pp-section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 1.25rem;
+}
+
+/* Floor plans inside project page */
+.pp-floors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 0.75rem;
+}
+
+/* Description block */
+.pp-desc {
+  background: #f8faff;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  font-size: 0.9375rem;
+  color: var(--ink-600);
+  line-height: 1.75;
+}
+
+/* Final CTA */
+.pp-cta {
+  padding: 2rem 2.5rem 3rem;
+  background: #fff;
+  border-top: 1px solid var(--line-100);
+}
+
+/* ─── SHARED PAGE HEADER ─── */
+.pp-page-hero {
+  background: linear-gradient(135deg, var(--brand-600) 0%, #6a3df0 100%);
+  padding: 3rem 2.5rem;
+  color: #fff;
+  /* inner text centred to match content width */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.pp-page-hero > * {
+  max-width: 980px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.pp-page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: inherit;
+  margin-bottom: 0.5rem;
+  line-height: 1.1;
+}
+.pp-page-sub {
+  color: rgba(255,255,255,0.8);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* ─── АКЦИИ PAGE ─── */
+.pp-promos { padding: 2rem 2.5rem 3rem; }
+.pp-promo-card {
+  background: #fff;
+  border: 1.5px solid var(--line-200);
+  border-radius: 20px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.15s, box-shadow 0.2s;
+}
+.pp-promo-card:hover {
+  border-color: var(--brand-400);
+  box-shadow: 0 6px 24px rgba(0,96,254,0.08);
+}
+.pp-promo-card--featured {
+  border-color: var(--brand-500);
+  background: linear-gradient(135deg, rgba(0,96,254,0.04) 0%, rgba(106,61,240,0.04) 100%);
+}
+.pp-promo-badge {
+  display: inline-block;
+  background: rgba(0,96,254,0.1);
+  color: var(--brand-600);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 100px;
+  margin-bottom: 0.85rem;
+}
+.pp-promo-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.1rem;
+  color: var(--ink-900);
+}
+.pp-promo-terms {
+  display: flex;
+  gap: 2.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.pp-promo-term { display: flex; flex-direction: column; gap: 0.2rem; }
+.pp-promo-term-val {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--brand-600);
+  line-height: 1;
+}
+.pp-promo-term-label { font-size: 0.8125rem; color: var(--ink-500); }
+.pp-promo-note {
+  font-size: 0.8125rem;
+  color: var(--ink-400);
+  margin-bottom: 1.25rem;
+}
+
+/* ─── ИПОТЕКА PAGE ─── */
+.pp-mortgage { padding: 2rem 2.5rem 3rem; }
+.pp-banks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+.pp-bank {
+  border: 1.5px solid var(--line-200);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.15s;
+}
+.pp-bank:hover { border-color: var(--brand-400); }
+.pp-bank__name { font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+.pp-bank__rate {
+  color: var(--brand-600);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-bottom: 0.2rem;
+}
+.pp-bank__term { color: var(--ink-500); font-size: 0.8125rem; }
+
+.pp-calc {
+  background: #f4f6ff;
+  border-radius: 20px;
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+.pp-calc__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+.pp-calc__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.pp-calc__field { display: flex; flex-direction: column; gap: 0.4rem; }
+.pp-calc__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pp-calc__input {
+  height: 48px;
+  padding: 0 1rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--line-200);
+  background: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink-900);
+  transition: border-color 0.15s;
+}
+.pp-calc__input:focus {
+  outline: none;
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 3px rgba(59,102,255,0.12);
+}
+.pp-calc__result {
+  background: var(--brand-600);
+  border-radius: 14px;
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+}
+.pp-calc__result-label { font-size: 0.875rem; opacity: 0.85; }
+.pp-calc__result-val { font-size: 1.5rem; font-weight: 800; }
+
+/* ─── ПАРТНЁРАМ PAGE ─── */
+.pp-partners { padding: 2rem 2.5rem 3rem; }
+.pp-partner-perks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.pp-perk {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1.5px solid var(--line-200);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pp-perk:hover { border-color: var(--brand-400); box-shadow: 0 4px 16px rgba(0,96,254,0.07); }
+.pp-perk__icon { font-size: 2rem; margin-bottom: 0.85rem; display: block; }
+.pp-perk h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; }
+.pp-perk p { font-size: 0.875rem; color: var(--ink-500); line-height: 1.55; }
+.pp-partner-form {
+  background: #fff;
+  border: 1.5px solid var(--line-200);
+  border-radius: 20px;
+  padding: 2rem;
+}
+.pp-partner-form h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+.pp-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.pp-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.pp-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─── ONLINE PURCHASE PAGE ─── */
+.pp-online { padding: 2rem 2.5rem 3rem; }
+.pp-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 2rem;
+}
+.pp-step {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding-bottom: 2rem;
+  position: relative;
+}
+.pp-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 21px;
+  top: 44px;
+  bottom: 0;
+  width: 2px;
+  background: var(--line-200);
+}
+.pp-step__num {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--brand-600);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.pp-step__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 0.4rem;
+  margin-top: 0.6rem;
+}
+.pp-step__text {
+  font-size: 0.9rem;
+  color: var(--ink-500);
+  line-height: 1.65;
+}
+
+/* ─── PAGE PANEL RESPONSIVE ─── */
+@media (max-width: 680px) {
+  .pp-hero { height: 240px; }
+  .pp-title { font-size: 1.5rem; }
+  .pp-specs { grid-template-columns: 1fr 1fr; }
+  .pp-content { padding: 1.25rem 1.25rem 1rem; }
+  .pp-section { padding: 0 1.25rem 1.5rem; }
+  .pp-cta { padding: 0.5rem 1.25rem 2rem; }
+  .pp-banks { grid-template-columns: 1fr; }
+  .pp-calc__row { grid-template-columns: 1fr; }
+  .pp-partner-perks { grid-template-columns: 1fr; }
+  .pp-form-row { grid-template-columns: 1fr; }
+  .pp-promo-terms { gap: 1.25rem; }
+  .pp-actions { gap: 0.5rem; }
+  .pp-promos, .pp-mortgage, .pp-partners, .pp-online { padding: 1.25rem; }
+}
