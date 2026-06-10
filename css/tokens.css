@@ -1,0 +1,99 @@
+/* ============================================================
+   PropTech — Design Tokens
+   Single source of truth for color, type, spacing, motion.
+   ============================================================ */
+
+:root {
+  /* --- Brand palette (exact NRG-BI values) --- */
+  --brand-600: #0060fe;       /* primary action blue */
+  --brand-500: #2587e9;
+  --brand-700: #0050d6;
+  --brand-400: #4d92ff;
+  --brand-grad-a: #0048cc;    /* hero / banner gradients */
+  --brand-grad-b: #0060fe;
+  --brand-grad-c: #2587e9;
+
+  /* --- Navy (badges, deep surfaces) --- */
+  --navy-900: #111a27;
+  --navy-800: #191850;
+  --navy-700: #242a4d;
+
+  /* --- Neutrals (exact NRG) --- */
+  --ink-900: #1d1d1f;         /* headings */
+  --ink-700: #363c48;         /* body strong */
+  --ink-500: #4c4d52;         /* secondary text */
+  --ink-400: #84858c;         /* muted / labels */
+  --line-200: #e6e6e7;        /* borders */
+  --line-100: #eceff3;
+
+  /* --- Surfaces --- */
+  --surface-app: #eceff3;     /* page background */
+  --surface-card: #ffffff;
+  --surface-soft: #f5f9ff;
+
+  /* --- Accent / semantic --- */
+  --accent-tg: #2aa6e8;       /* telegram blue */
+  --accent-cyan: #70ccdd;
+  --success: #19b36b;
+
+  /* --- Typography --- */
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: clamp(1.6rem, 1.2rem + 1.4vw, 2.25rem);
+  --text-3xl: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  --text-hero: clamp(2.6rem, 1.5rem + 4.6vw, 5rem);
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.25;
+  --leading-normal: 1.55;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+  --weight-black: 900;
+
+  /* --- Radius (NRG: 12 / 16 / 20 / 24 / 32) --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-pill: 999px;
+
+  /* --- Spacing scale --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-section: clamp(3.5rem, 2.5rem + 4vw, 7rem);
+
+  /* --- Shadows (NRG-derived) --- */
+  --shadow-xs: 1px 1px 4px rgba(88, 90, 95, 0.08);
+  --shadow-sm: 0 2px 8px rgba(88, 90, 95, 0.08);
+  --shadow-md: 0 16px 24px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 24px 60px rgba(20, 22, 31, 0.14);
+  --shadow-brand: 0 14px 30px rgba(0, 96, 254, 0.28);
+
+  /* --- Motion --- */
+  --dur-fast: 150ms;
+  --dur-normal: 280ms;
+  --dur-slow: 520ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* --- Layout --- */
+  --container: 1279px;
+  --container-pad: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  --header-h: 76px;
+}

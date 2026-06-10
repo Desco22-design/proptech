@@ -1,0 +1,17 @@
+# OS
+Thumbs.db
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# Windows shortcuts
+*.lnk
+
+# Temp / preview artifacts
+_*.png
+_*.html
+_*.css
+_*.jpg
+*.tmp
