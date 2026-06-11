@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    PropTech — Modal + Page Panel system
    ============================================================ */
 (function () {
@@ -280,10 +280,10 @@
       '</div>' +
       '<div class="pp-mortgage">' +
       '<div class="pp-banks">' +
-        '<div class="pp-bank"><div class="pp-bank__name">Ипотека Банк</div><div class="pp-bank__rate">от 14% годовых</div><div class="pp-bank__term">до 20 лет · взнос от 20%</div></div>' +
-        '<div class="pp-bank"><div class="pp-bank__name">Агробанк</div><div class="pp-bank__rate">от 15% годовых</div><div class="pp-bank__term">до 15 лет · взнос от 25%</div></div>' +
-        '<div class="pp-bank"><div class="pp-bank__name">Халк Банк</div><div class="pp-bank__rate">от 16% годовых</div><div class="pp-bank__term">до 20 лет · взнос от 20%</div></div>' +
-        '<div class="pp-bank"><div class="pp-bank__name">Узпромстройбанк</div><div class="pp-bank__rate">от 14.5% годовых</div><div class="pp-bank__term">до 25 лет · взнос от 15%</div></div>' +
+        '<div class="pp-bank"><div class="pp-bank__info"><div class="pp-bank__name">Ипотека Банк</div><div class="pp-bank__rate">от 14% годовых</div><div class="pp-bank__term">до 20 лет · взнос от 20%</div></div><img class="pp-bank__logo" src="Bank Icon/svg (22).svg" alt="Ипотека Банк" /></div>' +
+        '<div class="pp-bank"><div class="pp-bank__info"><div class="pp-bank__name">Агробанк</div><div class="pp-bank__rate">от 15% годовых</div><div class="pp-bank__term">до 15 лет · взнос от 25%</div></div><img class="pp-bank__logo" src="Bank Icon/svg (9).svg" alt="Агробанк" /></div>' +
+        '<div class="pp-bank"><div class="pp-bank__info"><div class="pp-bank__name">Халк Банк</div><div class="pp-bank__rate">от 16% годовых</div><div class="pp-bank__term">до 20 лет · взнос от 20%</div></div><img class="pp-bank__logo" src="Bank Icon/svg (7).svg" alt="Халк Банк" /></div>' +
+        '<div class="pp-bank"><div class="pp-bank__info"><div class="pp-bank__name">Узпромстройбанк</div><div class="pp-bank__rate">от 14.5% годовых</div><div class="pp-bank__term">до 25 лет · взнос от 15%</div></div><img class="pp-bank__logo" src="Bank Icon/svg (21).svg" alt="Узпромстройбанк" /></div>' +
       '</div>' +
       '<div class="pp-calc">' +
         '<div class="pp-calc__title">Ипотечный калькулятор</div>' +
@@ -360,11 +360,13 @@
   ───────────────────────────────────── */
   function wirePanelButtons() {
     requestAnimationFrame(function () {
-      ['panelCallbackBtn','panelCallbackBtn2','panelCallbackBtn3','panelCallbackBtn4'].forEach(function (id) {
+      /* ── Shared callback buttons ── */
+      ['panelCallbackBtn','panelCallbackBtn2','panelCallbackBtn3','panelCallbackBtn4','catalogCb','aptBannerCb'].forEach(function (id) {
         var btn = document.getElementById(id);
         if (btn) btn.addEventListener('click', scrollCallback);
       });
-      // Mortgage calculator
+
+      /* ── Mortgage calculator ── */
       if (document.getElementById('calcPrice')) {
         calcMortgage();
         ['calcPrice','calcDown','calcYears'].forEach(function (id) {
@@ -372,10 +374,153 @@
           if (el) el.addEventListener('input', calcMortgage);
         });
       }
+
+      /* ── CATALOG PAGE ── */
+
+      /* Filter buttons: toggle on/off */
+      pBody.querySelectorAll('.pp-fbtn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          if (this.dataset.filter === 'all') {
+            var allOn = pBody.querySelectorAll('.pp-fbtn.pp-fbtn--on').length === pBody.querySelectorAll('.pp-fbtn').length;
+            pBody.querySelectorAll('.pp-fbtn').forEach(function(b) {
+              b.classList.toggle('pp-fbtn--on', !allOn);
+            });
+          } else {
+            this.classList.toggle('pp-fbtn--on');
+          }
+        });
+      });
+
+      /* Reset filters */
+      var freset = pBody.querySelector('.pp-freset');
+      if (freset) {
+        freset.addEventListener('click', function() {
+          pBody.querySelectorAll('.pp-fbtn').forEach(function(b) { b.classList.remove('pp-fbtn--on'); });
+        });
+      }
+
+      /* Sort buttons: exclusive + re-render */
+      pBody.querySelectorAll('.pp-sbtn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          pBody.querySelectorAll('.pp-sbtn').forEach(function(b) { b.classList.remove('pp-sbtn--on'); });
+          this.classList.add('pp-sbtn--on');
+          var key = this.dataset.sort || '';
+          var grid = pBody.querySelector('#aptGrid');
+          if (!grid) return;
+          var shown = grid.querySelectorAll('.pp-apt-card').length;
+          var sorted = UNITS.slice().sort(function(a, b) {
+            if (key === 'due') return a.due.localeCompare(b.due);
+            if (key === 'price-asc') return a.price - b.price;
+            if (key === 'price-desc') return b.price - a.price;
+            return a.id - b.id;
+          });
+          grid.innerHTML = sorted.slice(0, shown).map(aptCardHtml).join('');
+        });
+      });
+
+      /* View toggle: grid / chess */
+      pBody.querySelectorAll('.pp-vbtn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          pBody.querySelectorAll('.pp-vbtn').forEach(function(b) { b.classList.remove('pp-vbtn--on'); });
+          this.classList.add('pp-vbtn--on');
+          var grid = pBody.querySelector('#aptGrid');
+          if (grid) grid.classList.toggle('pp-apt-grid--chess', this.dataset.view === 'chess');
+        });
+      });
+
+      /* Load more */
+      var moreBtn = pBody.querySelector('.pp-catalog-more');
+      if (moreBtn) {
+        moreBtn.addEventListener('click', function() {
+          var grid = pBody.querySelector('#aptGrid');
+          if (!grid) return;
+          var shown = grid.querySelectorAll('.pp-apt-card').length;
+          var next = UNITS.slice(shown % UNITS.length, (shown % UNITS.length) + 4);
+          if (!next.length) next = UNITS.slice(0, 4);
+          grid.insertAdjacentHTML('beforeend', next.map(aptCardHtml).join(''));
+          var newShown = shown + next.length;
+          var countEl = pBody.querySelector('.pp-catalog-count');
+          if (countEl) countEl.textContent = 'Показано ' + newShown + ' из 127';
+          var fill = pBody.querySelector('.pp-prog__fill');
+          if (fill) fill.style.width = Math.min(newShown / 127 * 100, 100) + '%';
+        });
+      }
+
+      /* Catalog banner: open project page */
+      var catalogProjBtn = document.getElementById('catalogProjBtn');
+      if (catalogProjBtn) {
+        catalogProjBtn.addEventListener('click', function() {
+          dispatch('project', {
+            projName:'Sky Gardens', projImg:'photo-1486325212027-8081e485255e',
+            projCls:'Бизнес', projAddr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура',
+            projPrice:'920', projFloors:'от 2 до 16 этажей', projDue:'4 кв. 2027', projRooms:'1,2,3'
+          });
+        });
+      }
+
+      /* ── APT DETAIL PAGE ── */
+
+      /* Buy online */
+      var aptBuyBtn = document.getElementById('aptBuyBtn');
+      if (aptBuyBtn) aptBuyBtn.addEventListener('click', function() { dispatch('online', {}); });
+
+      /* Book / callback */
+      var aptBookBtn = document.getElementById('aptBookBtn');
+      if (aptBookBtn) aptBookBtn.addEventListener('click', scrollCallback);
+
+      /* Infobar & banner "project detail" button */
+      pBody.querySelectorAll('.pp-apt-detail__proj-btn, #aptBannerProjBtn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var uid = parseInt(this.dataset.uid, 10);
+          var u = UNITS[uid];
+          if (!u) return;
+          dispatch('project', {
+            projName: u.proj, projImg: u.img, projCls: u.cls, projAddr: u.addr,
+            projPrice: '920', projFloors: 'от 2 до ' + u.totF + ' этажей',
+            projDue: u.due, projRooms: '1,2,3'
+          });
+        });
+      });
+
+      /* Finish tabs */
+      pBody.querySelectorAll('.pp-finish-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          pBody.querySelectorAll('.pp-finish-tab').forEach(function(t) { t.classList.remove('pp-finish-tab--on'); });
+          this.classList.add('pp-finish-tab--on');
+        });
+      });
+
+      /* Payment options: exclusive selection */
+      pBody.querySelectorAll('.pp-payment-opt').forEach(function(opt) {
+        opt.addEventListener('click', function() {
+          pBody.querySelectorAll('.pp-payment-opt').forEach(function(o) {
+            o.classList.remove('pp-payment-opt--on');
+            var r = o.querySelector('.pp-payment-radio');
+            if (r) r.classList.remove('pp-payment-radio--on');
+          });
+          this.classList.add('pp-payment-opt--on');
+          var r = this.querySelector('.pp-payment-radio');
+          if (r) r.classList.add('pp-payment-radio--on');
+        });
+      });
+
+      /* Apt options (repair/furniture): click state */
+      pBody.querySelectorAll('.pp-apt-option').forEach(function(opt) {
+        opt.addEventListener('click', function() {
+          this.classList.toggle('pp-apt-option--active');
+        });
+      });
+
+      /* Room price cards: open catalog filtered by rooms */
+      pBody.querySelectorAll('.pp-room-price-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+          var rooms = parseInt(this.dataset.rooms, 10);
+          showPanelPage(tplCatalogPage(rooms));
+        });
+      });
     });
   }
-
-  function calcMortgage() {
+function calcMortgage() {
     var price  = parseFloat(document.getElementById('calcPrice').value)  || 600;
     var down   = parseFloat(document.getElementById('calcDown').value)   || 20;
     var years  = parseFloat(document.getElementById('calcYears').value)  || 15;
@@ -442,19 +587,280 @@
   }
 
   /* ─────────────────────────────────────
-     Dispatch
+     APARTMENT CATALOG DATA
   ───────────────────────────────────── */
+  var UNITS = [
+    { id:0,  rooms:1, area:39.85, price:875858368,  oldP:995293600,   no:'10',  floor:3,  totF:16, ent:1, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:1,  rooms:2, area:41.38, price:996880614,  oldP:1132818000,  no:'100', floor:4,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:2,  rooms:1, area:39.44, price:867437049,  oldP:985723900,   no:'101', floor:4,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:3,  rooms:2, area:41.33, price:995748811,  oldP:1131532740,  no:'102', floor:4,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:4,  rooms:4, area:98.24, price:1999443353, oldP:2272094720,  no:'103', floor:4,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:5,  rooms:1, area:39.37, price:856162067,  oldP:972911440,   no:'106', floor:5,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:6,  rooms:3, area:72.85, price:1488651868, oldP:1691649850,  no:'11',  floor:3,  totF:16, ent:1, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:7,  rooms:1, area:39.32, price:864901593,  oldP:982842720,   no:'111', floor:6,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:8,  rooms:2, area:55.10, price:1145000000, oldP:1301000000,  no:'112', floor:7,  totF:16, ent:1, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:9,  rooms:3, area:88.50, price:1750000000, oldP:1990000000,  no:'113', floor:7,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:10, rooms:1, area:42.00, price:920000000,  oldP:1045800000,  no:'114', floor:8,  totF:16, ent:1, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+    { id:11, rooms:2, area:63.75, price:1290000000, oldP:1467000000,  no:'115', floor:8,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
+  ];
+
+  function fmtU(n) {
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
+
+
+  /* Inline SVG micro-icons */
+  var I = {
+    chvD: '<svg class="pp-ic" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    chvR: '<svg class="pp-ic" width="6" height="10" viewBox="0 0 6 10" fill="none"><path d="M1 1l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    flt:  '<svg class="pp-ic" width="14" height="12" viewBox="0 0 14 12" fill="none"><line x1="1" y1="2" x2="13" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="5.5" y1="10" x2="8.5" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    grid: '<svg class="pp-ic" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
+    chess:'<svg class="pp-ic" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="5.5" width="5" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="5.5" width="5" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="10" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
+    dots: '<svg class="pp-ic" width="16" height="4" viewBox="0 0 16 4" fill="currentColor"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="14" cy="2" r="1.5"/></svg>',
+    bld:  '<svg class="pp-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 15V10h4v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5 7h1.5M9.5 7H11M5 5h1.5M9.5 5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    call: '<svg class="pp-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2h2.5l1 3.5-1.5 1c.7 1.4 1.6 2.8 2.5 3.5l1.5-1 3.5 1V12.5C13 13.3 12.3 14 11.5 14 5.7 14 2 8.3 2 4.5A2.5 2.5 0 014 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    tag:  '<svg class="pp-ic" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 1.5h4.8L12.8 8l-4.3 4.3L2.2 5.7V1.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4.5" r="1" fill="currentColor"/></svg>'
+  };
+  /* ── Detailed floor plan SVG for apt detail page ── */
+  function detailFloorSVG(rooms, area) {
+    rooms = parseInt(rooms, 10) || 1;
+    var a = parseFloat(area) || 39.85;
+    var cfgs = {
+      1: [
+        { x:185, y:20, w:180, h:295, name:'Гостиная',  sq:17.43 },
+        { x:365, y:20, w:130, h:115, name:'Кухня',     sq:11.95 },
+        { x:365, y:135,w:75,  h:90,  name:'Ванная',    sq:4.95  },
+        { x:365, y:225,w:130, h:90,  name:'Прихожая',  sq:4.20  }
+      ],
+      2: [
+        { x:185, y:20, w:160, h:148, name:'Гостиная',  sq:17.43 },
+        { x:185, y:168,w:160, h:147, name:'Спальня',   sq:14.80 },
+        { x:345, y:20, w:150, h:115, name:'Кухня',     sq:12.50 },
+        { x:345, y:135,w:75,  h:85,  name:'Ванная',    sq:5.20  },
+        { x:345, y:220,w:150, h:95,  name:'Прихожая',  sq:5.80  }
+      ],
+      3: [
+        { x:180, y:20, w:155, h:148, name:'Гостиная',  sq:20.50 },
+        { x:180, y:168,w:155, h:147, name:'Спальня 1', sq:16.20 },
+        { x:335, y:20, w:160, h:115, name:'Кухня',     sq:13.50 },
+        { x:335, y:135,w:80,  h:90,  name:'Ванная',    sq:5.50  },
+        { x:415, y:135,w:80,  h:90,  name:'Санузел',   sq:3.50  },
+        { x:335, y:225,w:160, h:90,  name:'Спальня 2', sq:14.00 }
+      ],
+      4: [
+        { x:175, y:20, w:150, h:148, name:'Гостиная',  sq:22.00 },
+        { x:175, y:168,w:150, h:147, name:'Спальня 1', sq:18.50 },
+        { x:325, y:20, w:170, h:115, name:'Кухня',     sq:14.50 },
+        { x:325, y:135,w:85,  h:90,  name:'Ванная',    sq:6.00  },
+        { x:410, y:135,w:85,  h:90,  name:'Санузел',   sq:3.80  },
+        { x:325, y:225,w:85,  h:90,  name:'Спальня 2', sq:16.00 },
+        { x:410, y:225,w:85,  h:90,  name:'Спальня 3', sq:14.50 }
+      ]
+    };
+    var rms = cfgs[rooms] || cfgs[1];
+    var allX2 = rms.map(function(r){return r.x+r.w;}), allY2 = rms.map(function(r){return r.y+r.h;});
+    var bx = rms[0].x - 3, by = 17, bw = Math.max.apply(null,allX2) - rms[0].x + 6, bh = Math.max.apply(null,allY2) - 17 + 6;
+    var rects = rms.map(function(r){
+      var cx = r.x+r.w/2, cy = r.y+r.h/2;
+      return '<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" fill="#b3e5fc" stroke="#5591c9" stroke-width="1.5"/>'+
+        '<text x="'+cx+'" y="'+(cy-7)+'" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#1a3a5c">'+r.name+'</text>'+
+        '<text x="'+cx+'" y="'+(cy+8)+'" text-anchor="middle" font-size="9" font-family="Inter,sans-serif" fill="#4a6a8c">'+r.sq+'</text>';
+    }).join('');
+    var mc = rms[0], cx = mc.x+mc.w/2, cy = mc.y+mc.h/2;
+    var legend =
+      '<text x="14" y="22" font-size="10" font-weight="700" font-family="Inter,sans-serif" fill="#222">Условные обозначения</text>'+
+      '<rect x="14" y="32" width="28" height="5" fill="#e53935"/>'+
+      '<text x="48" y="40" font-size="8" font-family="Inter,sans-serif" fill="#555">каркас монолит</text>'+
+      '<line x1="14" y1="55" x2="42" y2="55" stroke="#888" stroke-width="1.5" stroke-dasharray="4,3"/>'+
+      '<text x="48" y="59" font-size="8" font-family="Inter,sans-serif" fill="#555">внутренние перегородки 100 мм</text>'+
+      '<line x1="14" y1="73" x2="42" y2="73" stroke="#333" stroke-width="2.5"/>'+
+      '<text x="48" y="77" font-size="8" font-family="Inter,sans-serif" fill="#555">основные стены газоблок 200 мм</text>'+
+      '<rect x="14" y="86" width="28" height="8" fill="#b3e5fc" stroke="#5591c9" stroke-width="1"/>'+
+      '<text x="48" y="97" font-size="8" font-family="Inter,sans-serif" fill="#555">межквартирные стены кирпич 250 мм</text>'+
+      '<text x="14" y="120" font-size="10" font-weight="700" font-family="Inter,sans-serif" fill="#222">Высота оконных проёмов</text>'+
+      '<text x="20" y="136" font-size="8" font-family="Inter,sans-serif" fill="#666">тип-1</text>'+
+      '<rect x="14" y="140" width="28" height="38" fill="none" stroke="#555" stroke-width="1"/>'+
+      '<rect x="14" y="140" width="28" height="20" fill="#d4eeff" stroke="#555" stroke-width="1"/>'+
+      '<text x="52" y="136" font-size="8" font-family="Inter,sans-serif" fill="#666">тип-2</text>'+
+      '<rect x="47" y="140" width="28" height="38" fill="none" stroke="#555" stroke-width="1"/>'+
+      '<rect x="47" y="150" width="28" height="28" fill="#d4eeff" stroke="#555" stroke-width="1"/>'+
+      '<text x="14" y="192" font-size="7" font-family="Inter,sans-serif" fill="#888">окно комнат</text>'+
+      '<text x="47" y="192" font-size="7" font-family="Inter,sans-serif" fill="#888">выход на лоджию</text>';
+    return '<svg viewBox="0 0 510 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;background:#fff;border-radius:8px">'+
+      legend + rects +
+      '<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" fill="none" stroke="#e53935" stroke-width="3"/>'+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="32" fill="#1565c0"/>'+
+      '<text x="'+cx+'" y="'+(cy-5)+'" text-anchor="middle" font-size="19" font-weight="800" font-family="Inter,sans-serif" fill="#fff">'+rooms+'</text>'+
+      '<text x="'+cx+'" y="'+(cy+13)+'" text-anchor="middle" font-size="8.5" font-family="Inter,sans-serif" fill="rgba(255,255,255,.9)">'+a.toFixed(2)+'м²</text>'+
+    '</svg>';
+  }
+
+  /* ── Apt card HTML (used in catalog + similar) ── */
+  function aptCardHtml(u) {
+    return '<div class="pp-apt-card" data-modal="apt" data-apt-idx="'+u.id+'">'+
+      '<div class="pp-apt-card__hd">'+
+        '<span class="pp-apt-label">'+u.rooms+'-комн. '+u.area.toFixed(2)+' м²</span>'+
+      '</div>'+
+      '<div class="pp-apt-card__tags">'+
+        '<span class="pp-apt-tag pp-apt-tag--cls">'+u.cls+'</span>'+
+        '<span class="pp-apt-tag pp-apt-tag--promo">Акции</span>'+
+      '</div>'+
+      '<div class="pp-apt-card__plan">'+floorSVG(u.rooms)+'</div>'+
+      '<div class="pp-apt-card__pr">'+
+        '<span class="pp-apt-price">'+fmtU(u.price)+' UZS</span>'+
+        '<span class="pp-apt-old">'+fmtU(u.oldP)+' UZS</span>'+
+        '<button class="pp-apt-dots" aria-label="Ещё">'+I.dots+'</button>'+
+      '</div>'+
+      '<div class="pp-apt-card__proj">'+u.proj+' 1 – 2</div>'+
+      '<div class="pp-apt-card__info">№ '+u.no+' | '+u.floor+'/'+u.totF+' этаж | '+u.ent+' подъезд | '+u.due+'</div>'+
+      '<div class="pp-apt-card__cta"><span class="ic ic--flash" style="width:.85em;height:.85em;vertical-align:middle;margin-right:.3em"></span>спецпредложение до 31 декабря</div>'+
+    '</div>';
+  }
+
+  /* Catalog page */
+  function tplCatalogPage(filterRooms) {
+    var units = filterRooms ? UNITS.filter(function(u){ return u.rooms === filterRooms; }) : UNITS;
+    var shown = Math.min(8, units.length);
+    var cards = units.slice(0, shown).map(aptCardHtml).join('');
+    return '<div class="pp-catalog-wrap">'+
+      '<h1 class="pp-catalog-title">Выбрать квартиру</h1>'+
+      '<div class="pp-catalog-filters">'+
+        '<button class="pp-fbtn pp-fbtn--on" data-filter="city">Ташкент '+I.chvD+'</button>'+
+        '<button class="pp-fbtn pp-fbtn--on" data-filter="type">Квартира '+I.chvD+'</button>'+
+        '<button class="pp-fbtn" data-filter="price">Цена '+I.chvD+'</button>'+
+        '<button class="pp-fbtn" data-filter="due">Время сдачи '+I.chvD+'</button>'+
+        '<button class="pp-fbtn pp-fbtn--all" data-filter="all">'+I.flt+' Все фильтры</button>'+
+        '<button class="pp-freset">Сбросить</button>'+
+      '</div>'+
+      '<div class="pp-catalog-toolbar">'+
+        '<div class="pp-sorts">'+
+          '<button class="pp-sbtn pp-sbtn--on" data-sort="">Без сортировки '+I.chvD+'</button>'+
+          '<button class="pp-sbtn" data-sort="due">Очередь '+I.chvD+'</button>'+
+          '<button class="pp-sbtn" data-sort="price-asc">По цене '+I.chvD+'</button>'+
+        '</div>'+
+        '<div class="pp-views">'+
+          '<button class="pp-vbtn pp-vbtn--on" data-view="grid" title="Плитка">'+I.grid+'</button>'+
+          '<button class="pp-vbtn" data-view="chess" title="Шахматка">'+I.chess+'</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pp-proj-banner" style="background-image:linear-gradient(to right,rgba(0,0,0,.65) 0%,rgba(0,0,0,.2) 60%,rgba(0,0,0,.4) 100%),url(https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1200&q=80)">'+
+        '<div class="pp-proj-banner__l">'+
+          '<h3 class="pp-proj-banner__name">Sky Gardens</h3>'+
+          '<p class="pp-proj-banner__addr"><span class="ic ic--location" style="width:.9em;height:.9em;margin-right:.3em;vertical-align:middle"></span>г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура</p>'+
+          '<span class="badge">Бизнес</span>'+
+        '</div>'+
+        '<div class="pp-proj-banner__r">'+
+          '<button class="btn btn--ghost btn--sm" id="catalogCb">'+I.call+' Оставить заявку</button>'+
+          '<button class="btn btn--ghost btn--sm" id="catalogProjBtn">'+I.bld+' Подробнее о ЖК</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pp-apt-grid" id="aptGrid">'+cards+'</div>'+
+      '<div class="pp-catalog-paging">'+
+        '<span class="pp-catalog-count">Показано '+shown+' из '+units.length+'</span>'+
+        '<div class="pp-prog"><div class="pp-prog__fill" style="width:'+Math.round(shown/Math.max(units.length,1)*100)+'%"></div></div>'+
+      '</div>'+
+      (shown < units.length ? '<button class="btn btn--outline btn--block pp-catalog-more">Показать ещё</button>' : '')+
+    '</div>';
+  }
+/* Apartment detail page */
+  function tplAptDetailPage(u) {
+    if (!u) return '<div class="pp-catalog-wrap"><p style="padding:2rem">Квартира не найдена</p></div>';
+    var roomPrices = [938.3, 1064.3, 1322.9, 2129.9];
+    var similarCards = UNITS.filter(function(x){ return x.id !== u.id && x.rooms === u.rooms; }).slice(0,3);
+    if (similarCards.length < 2) similarCards = UNITS.filter(function(x){ return x.id !== u.id; }).slice(0,3);
+
+    return '<div class="pp-apt-detail">'+
+      '<h1 class="pp-apt-detail__title">'+u.rooms+'-комнатная квартира №'+u.no+', '+u.area.toFixed(2)+' м² — '+u.proj+'</h1>'+
+      '<div class="pp-apt-detail__cols">'+
+        '<div class="pp-apt-detail__left">'+
+          '<div class="pp-apt-detail__infobar">'+
+            '<span class="pp-infobar-tag">'+u.proj+'</span>'+
+            '<span class="pp-infobar-tag">'+u.floor+' из '+u.totF+' эт.</span>'+
+            '<span class="pp-infobar-tag">'+u.ent+' подъезд</span>'+
+            '<span class="pp-infobar-tag">Сдача '+u.due+'</span>'+
+            '<button class="pp-apt-detail__proj-btn" data-uid="'+u.id+'">Подробнее о ЖК '+I.chvR+'</button>'+
+          '</div>'+
+          '<div class="pp-finish-tabs">'+
+            '<button class="pp-finish-tab pp-finish-tab--on">Черновая отделка</button>'+
+            '<button class="pp-finish-tab">Чистовая отделка</button>'+
+          '</div>'+
+          '<div class="pp-apt-detail__plan">'+detailFloorSVG(u.rooms, u.area)+'</div>'+
+        '</div>'+
+        '<div class="pp-apt-detail__right">'+
+          '<div class="pp-apt-detail__price">'+fmtU(u.price)+' UZS</div>'+
+          '<div class="pp-apt-detail__oldprice">'+fmtU(u.oldP)+' UZS</div>'+
+          '<p class="pp-apt-detail__price-note">Стоимость дополнительных опций включается в итоговую стоимость квартиры</p>'+
+          '<button class="pp-apt-option" data-option="repair">'+
+            '<span class="pp-apt-option__ic"><span class="ic ic--clipboard" style="width:1.1em;height:1.1em;color:var(--brand-600)"></span></span>'+
+            '<span class="pp-apt-option__body"><span class="pp-apt-option__main">Ремонт</span><span class="pp-apt-option__sub">Подумайте о ремонте заранее</span></span>'+
+            '<span class="pp-apt-option__arr">'+I.chvR+'</span>'+
+          '</button>'+
+          '<button class="pp-apt-option" data-option="furniture">'+
+            '<span class="pp-apt-option__ic"><span class="ic ic--house" style="width:1.1em;height:1.1em;color:var(--brand-600)"></span></span>'+
+            '<span class="pp-apt-option__body"><span class="pp-apt-option__main">Мебель</span><span class="pp-apt-option__sub">Подумайте об интерьере заранее</span></span>'+
+            '<span class="pp-apt-option__arr">'+I.chvR+'</span>'+
+          '</button>'+
+          '<div class="pp-payment-title">Способы оплаты</div>'+
+          '<div class="pp-payment-opt pp-payment-opt--on" data-pay="full">'+
+            '<div class="pp-payment-row"><span class="pp-payment-radio pp-payment-radio--on"></span><span>100% Оплата</span><span class="pp-payment-discount">−12%</span></div>'+
+            '<div class="pp-payment-label">Стандартные условия 2026 · 100% / рассрочка</div>'+
+            '<div class="pp-payment-sub">Бронирование от 1 000 000 UZS · действует 3 дня</div>'+
+          '</div>'+
+          '<div class="pp-payment-opt" data-pay="installment">'+
+            '<div class="pp-payment-row"><span class="pp-payment-radio"></span><span>Рассрочка</span><span class="pp-payment-discount">0%</span></div>'+
+            '<div class="pp-payment-label">Рассрочка до 36 месяцев · первый взнос 20%</div>'+
+            '<div class="pp-payment-sub">Гибкий график платежей без переплаты</div>'+
+          '</div>'+
+          '<div class="pp-payment-opt" data-pay="mortgage">'+
+            '<div class="pp-payment-row"><span class="pp-payment-radio"></span><span>Ипотека</span><span class="pp-payment-discount">от 13%</span></div>'+
+            '<div class="pp-payment-label">Банки-партнёры · одобрение за 3 дня</div>'+
+            '<div class="pp-payment-sub">Первый взнос от 20% · срок до 25 лет</div>'+
+          '</div>'+
+          '<button class="btn btn--primary btn--lg btn--block" id="aptBuyBtn">'+I.call+' Купить онлайн</button>'+
+          '<button class="btn btn--outline btn--lg btn--block pp-apt-book" id="aptBookBtn">Забронировать</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pp-apt-specs">'+
+        '<div class="pp-apt-spec-row"><span>Расположение</span><span>'+u.addr+'</span></div>'+
+        '<div class="pp-apt-spec-row"><span>Тип недвижимости</span><span>Квартира</span></div>'+
+        '<div class="pp-apt-spec-row"><span>Общая площадь</span><span>'+u.area.toFixed(2)+' м²</span></div>'+
+        '<div class="pp-apt-spec-row"><span>Этаж</span><span>'+u.floor+' из '+u.totF+'</span></div>'+
+        '<div class="pp-apt-spec-row"><span>Подъезд</span><span>'+u.ent+'</span></div>'+
+        '<div class="pp-apt-spec-row"><span>Высота потолков</span><span>Не менее 3,0 м</span></div>'+
+        '<div class="pp-apt-spec-row"><span>Срок сдачи</span><span>'+u.due+'</span></div>'+
+      '</div>'+
+      '<div class="pp-proj-banner" style="background-image:linear-gradient(to right,rgba(0,0,0,.65) 0%,rgba(0,0,0,.2) 60%,rgba(0,0,0,.4) 100%),url(https://images.unsplash.com/'+u.img+'?w=1200&q=80)">'+
+        '<div class="pp-proj-banner__l">'+
+          '<h3 class="pp-proj-banner__name">'+u.proj+'</h3>'+
+          '<p class="pp-proj-banner__addr"><span class="ic ic--location" style="width:.9em;height:.9em;margin-right:.3em;vertical-align:middle"></span>'+u.addr+'</p>'+
+          '<span class="badge">'+u.cls+'</span>'+
+        '</div>'+
+        '<div class="pp-proj-banner__r">'+
+          '<button class="btn btn--ghost btn--sm" id="aptBannerCb">'+I.call+' Оставить заявку</button>'+
+          '<button class="btn btn--ghost btn--sm" data-uid="'+u.id+'" id="aptBannerProjBtn">'+I.bld+' Подробнее о ЖК</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pp-room-prices">'+
+        [1,2,3,4].map(function(r,i){
+          return '<div class="pp-room-price-card'+(u.rooms===r?' pp-room-price-card--on':'')+'" data-rooms="'+r+'">'+
+            '<div class="pp-room-price__rooms">'+r+'-к</div>'+
+            '<div class="pp-room-price__val">от '+roomPrices[i]+' млн UZS</div>'+
+            '<span class="pp-room-price__arr">'+I.chvR+'</span>'+
+          '</div>';
+        }).join('')+
+      '</div>'+
+      '<h2 class="pp-apt-similar__title">Похожие квартиры</h2>'+
+      '<div class="pp-apt-similar">'+similarCards.map(aptCardHtml).join('')+'</div>'+
+    '</div>';
+  }
+
+  /* Dispatch */
   function dispatch(type, ds) {
     // Panel types — showPanelPage keeps a Back history when navigating
     // from one panel page to another (e.g. project → Ипотека → Назад).
     if (type === 'project') { showPanelPage(tplProjectPage(ds)); return; }
     if (type === 'floors') {
-      showPanelPage(tplProjectPage(ds));
-      // Scroll to floor plans section after render
-      setTimeout(function () {
-        var sec = pBody.querySelector('.pp-section');
-        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-      }, 420);
+      showPanelPage(tplCatalogPage());
       return;
     }
     if (type === 'promo')     { showPanelPage(tplPromoPage());     return; }
@@ -464,6 +870,8 @@
     if (type === 'promo-panel') { showPanelPage(tplPromoPage());   return; }
 
     // Small modal types
+    if (type === 'catalog')   { showPanelPage(tplCatalogPage()); return; }
+    if (type === 'apt')       { showPanelPage(tplAptDetailPage(UNITS[parseInt(ds.aptIdx, 10)])); return; }
     if (type === 'invest')    { openModal(tplInvest(), 'sm'); wireBtn('modalCallbackBtn', function () { closeModal(); }); return; }
     if (type === 'infra')     { openModal(tplInfra(), 'sm');  wireBtn('modalCallbackBtn', function () { closeModal(); }); return; }
     if (type === 'privacy')   { openModal(tplPrivacy(), 'sm'); return; }
@@ -486,3 +894,8 @@
   });
 
 })();
+
+
+
+
+

@@ -55,7 +55,7 @@
             data-proj-due="${p.due}"
             data-proj-rooms="${p.rooms.join(',')}">Подробнее</button>
           <button class="btn btn--card"
-            data-modal="floors"
+            data-modal="catalog"
             data-proj-name="${p.name}"
             data-proj-rooms="${p.rooms.join(',')}"
             data-proj-price="${p.price}"

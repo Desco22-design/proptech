@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
@@ -12,15 +12,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/tokens.css" />
-  <link rel="stylesheet" href="css/base.css" />
-  <link rel="stylesheet" href="css/icons.css" />
-  <link rel="stylesheet" href="css/components.css" />
-  <link rel="stylesheet" href="css/header.css" />
-  <link rel="stylesheet" href="css/hero.css" />
-  <link rel="stylesheet" href="css/projects.css" />
-  <link rel="stylesheet" href="css/info.css" />
-  <link rel="stylesheet" href="css/modal.css" />
+  <link rel="stylesheet" href="css/tokens.css?v=3" />
+  <link rel="stylesheet" href="css/base.css?v=3" />
+  <link rel="stylesheet" href="css/icons.css?v=3" />
+  <link rel="stylesheet" href="css/components.css?v=3" />
+  <link rel="stylesheet" href="css/header.css?v=3" />
+  <link rel="stylesheet" href="css/hero.css?v=3" />
+  <link rel="stylesheet" href="css/projects.css?v=3" />
+  <link rel="stylesheet" href="css/info.css?v=3" />
+  <link rel="stylesheet" href="css/modal.css?v=4" />
 </head>
 <body>
   <!-- ============================ HEADER ============================ -->
@@ -385,21 +385,21 @@
 
           <div class="offices">
             <h3 class="offices__title">Отделы продаж</h3>
-            <div class="office is-active">
+            <div class="office is-active" data-ll="69.2945,41.3090">
               <span class="office__pin"><span class="ic ic--location"></span></span>
               <div>
                 <div class="office__addr">просп. Амира Темура, 105</div>
                 <div class="office__hours">Ежедневно 09:00 – 19:00</div>
               </div>
             </div>
-            <div class="office">
+            <div class="office" data-ll="69.2655,41.3010">
               <span class="office__pin"><span class="ic ic--location"></span></span>
               <div>
                 <div class="office__addr">ул. Истиклол, 22А</div>
                 <div class="office__hours">Ежедневно 09:00 – 19:00</div>
               </div>
             </div>
-            <div class="office">
+            <div class="office" data-ll="69.2794,41.2995">
               <span class="office__pin"><span class="ic ic--location"></span></span>
               <div>
                 <div class="office__addr">ул. Навои, 47Б</div>
@@ -463,17 +463,16 @@
         <div class="footer__col">
           <h4>Покупателям</h4>
           <a href="#projects">Строящиеся проекты</a>
-          <a href="#projects">Ипотека</a>
-          <a href="#projects">Рассрочка</a>
-          <a href="#projects">Акции</a>
-          <a href="#projects">Планировки</a>
+          <a href="#" data-modal="mortgage">Ипотека</a>
+          <a href="#" data-modal="promo">Рассрочка</a>
+          <a href="#" data-modal="promo">Акции</a>
+          <a href="#" data-modal="catalog">Планировки</a>
         </div>
         <div class="footer__col">
           <h4>Компания</h4>
           <a href="#about">О компании</a>
           <a href="#projects">Новости</a>
-          <a href="#projects">Коммерция</a>
-          <a href="#projects">Агентствам</a>
+          <a href="#" data-modal="partners">Агентствам</a>
           <a href="#contacts">Контакты</a>
         </div>
         <div class="footer__col">
@@ -481,7 +480,8 @@
           <a href="tel:7777">Колл-центр: 7777</a>
           <a href="#contacts">просп. Амира Темура, 105</a>
           <a href="#contacts">ул. Истиклол, 22А</a>
-          <a href="#">Telegram</a>
+          <a href="#contacts">ул. Навои, 47Б</a>
+          <a href="https://t.me/proptech_uz" target="_blank" rel="noopener">Telegram</a>
         </div>
       </div>
       <div class="footer__bottom">
@@ -491,8 +491,8 @@
     </div>
   </footer>
 
-  <script src="js/projects.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/modal.js"></script>
+  <script src="js/projects.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
+  <script src="js/modal.js?v=4"></script>
 </body>
 </html>

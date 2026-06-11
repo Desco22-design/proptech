@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    PropTech — Modal system
    ============================================================ */
 
@@ -439,7 +439,7 @@
 }
 
 .m-invest__stat-label { font-size: 0.75rem; color: var(--ink-500); }
-.m-invest__text { color: var(--ink-600, #4a5568); line-height: 1.7; margin-bottom: 1.5rem; }
+.m-invest__text { color: var(--ink-500, #4a5568); line-height: 1.7; margin-bottom: 1.5rem; }
 
 /* ─────────────────────────────────────────────
    INFRA
@@ -503,7 +503,7 @@
 
 .m-privacy__text p {
   font-size: 0.875rem;
-  color: var(--ink-600, #4a5568);
+  color: var(--ink-500, #4a5568);
   line-height: 1.7;
 }
 
@@ -564,7 +564,7 @@
   gap: 0.5rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--ink-600);
+  color: var(--ink-500);
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
   padding: 0.5rem 0.85rem;
@@ -593,7 +593,7 @@
   margin: 0 auto;
   background: var(--surface-card);
   border-radius: var(--radius-2xl);
-  overflow: hidden;
+  overflow: clip; /* clip keeps border-radius without breaking position:sticky in children */
   box-shadow: var(--shadow-lg);
   box-sizing: border-box;
   opacity: 0;
@@ -733,7 +733,7 @@
   border-radius: 16px;
   padding: 1.5rem 1.75rem;
   font-size: 0.9375rem;
-  color: var(--ink-600);
+  color: var(--ink-500);
   line-height: 1.75;
 }
 
@@ -855,8 +855,13 @@
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   transition: border-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 .pp-bank:hover { border-color: var(--brand-400); }
+.pp-bank__info { flex: 1; min-width: 0; }
 .pp-bank__name { font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
 .pp-bank__rate {
   color: var(--brand-600);
@@ -865,6 +870,12 @@
   margin-bottom: 0.2rem;
 }
 .pp-bank__term { color: var(--ink-500); font-size: 0.8125rem; }
+.pp-bank__logo {
+  width: 80px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 
 .pp-calc {
   background: #f4f6ff;
@@ -1033,3 +1044,440 @@
 @media (max-width: 420px) {
   .pp-specs { grid-template-columns: 1fr; }
 }
+
+/* ─────────────────────────────────────────────
+   CATALOG PAGE (Планировки)
+───────────────────────────────────────────── */
+.pp-catalog-wrap {
+  padding: clamp(1.5rem, 1rem + 2vw, 2.5rem) clamp(1.25rem, 0.8rem + 2vw, 2.5rem) 3rem;
+  background: #f5f7fa;
+  min-height: 100%;
+}
+
+.pp-catalog-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--ink-900);
+  margin-bottom: 1.25rem;
+}
+
+.pp-catalog-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.pp-fbtn {
+  height: 36px;
+  padding: 0 1rem;
+  border-radius: 100px;
+  border: 1.5px solid var(--line-200);
+  background: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.pp-fbtn:hover { border-color: var(--brand-400); }
+.pp-fbtn--on { border-color: var(--brand-500); color: var(--brand-600); background: rgba(0,96,254,0.05); }
+.pp-farr { font-size: 0.7rem; margin-left: 0.3rem; }
+.pp-freset { background: none; border: none; color: var(--ink-400); font-size: 0.875rem; cursor: pointer; padding: 0 0.5rem; }
+.pp-freset:hover { color: var(--ink-700); }
+
+.pp-catalog-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pp-sorts { display: flex; gap: 0.5rem; }
+.pp-sbtn {
+  height: 36px;
+  padding: 0 1rem;
+  border-radius: 100px;
+  border: 1.5px solid var(--line-200);
+  background: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  cursor: pointer;
+}
+.pp-sbtn--on { border-color: var(--brand-500); color: var(--brand-600); background: rgba(0,96,254,0.05); }
+
+.pp-views { display: flex; gap: 0.25rem; }
+.pp-vbtn {
+  height: 36px;
+  padding: 0 1rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--line-200);
+  background: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-500);
+  cursor: pointer;
+}
+.pp-vbtn--on { background: var(--brand-600); color: #fff; border-color: var(--brand-600); }
+
+/* ─── Project banner ─── */
+.pp-proj-banner {
+  border-radius: 16px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  min-height: 110px;
+}
+.pp-proj-banner__l { color: #fff; }
+.pp-proj-banner__name { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.3rem; }
+.pp-proj-banner__addr { font-size: 0.8125rem; opacity: 0.85; margin-bottom: 0.5rem; }
+.pp-proj-banner__r { display: flex; gap: 0.75rem; flex-shrink: 0; flex-wrap: wrap; }
+
+/* ─── Apt card grid ─── */
+.pp-apt-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.pp-apt-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1.5px solid var(--line-200);
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.pp-apt-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); border-color: var(--brand-400); }
+
+.pp-apt-card__hd { padding: 0.85rem 0.9rem 0.35rem; }
+.pp-apt-label { font-size: 0.9375rem; font-weight: 700; color: var(--ink-900); }
+
+.pp-apt-card__tags { padding: 0 0.9rem 0.5rem; display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.pp-apt-tag { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 100px; }
+.pp-apt-tag--cls { background: rgba(0,96,254,0.12); color: var(--brand-600); }
+.pp-apt-tag--promo { background: rgba(34,197,94,0.15); color: #16a34a; }
+
+.pp-apt-card__plan { padding: 0 0.9rem 0.5rem; flex: 1; }
+.pp-apt-card__plan svg { width: 100%; height: auto; display: block; }
+
+.pp-apt-card__pr {
+  padding: 0.5rem 0.9rem 0.25rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.pp-apt-price { font-size: 0.9375rem; font-weight: 700; color: #2e7d32; }
+.pp-apt-old { font-size: 0.75rem; color: var(--ink-400); text-decoration: line-through; }
+.pp-apt-dots { margin-left: auto; color: var(--ink-400); font-size: 1rem; cursor: pointer; }
+
+.pp-apt-card__proj { padding: 0 0.9rem; font-size: 0.8125rem; color: var(--ink-500); }
+.pp-apt-card__info { padding: 0.15rem 0.9rem 0.75rem; font-size: 0.75rem; color: var(--ink-400); }
+
+.pp-apt-card__cta {
+  margin-top: auto;
+  background: linear-gradient(135deg, var(--brand-700) 0%, var(--brand-600) 100%);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.65rem 0.9rem;
+  text-align: center;
+}
+
+/* ─── Catalog paging ─── */
+.pp-catalog-paging { text-align: center; margin-bottom: 1rem; }
+.pp-catalog-count { font-size: 0.875rem; color: var(--ink-500); display: block; margin-bottom: 0.5rem; }
+.pp-prog { width: 200px; height: 3px; background: var(--line-200); border-radius: 100px; margin: 0 auto 1.5rem; }
+.pp-prog__fill { height: 100%; background: var(--brand-600); border-radius: 100px; }
+.pp-catalog-more { max-width: 300px; margin: 0 auto; display: block; }
+
+/* ─────────────────────────────────────────────
+   APARTMENT DETAIL PAGE
+───────────────────────────────────────────── */
+.pp-apt-detail {
+  padding: clamp(1.5rem, 1rem + 2vw, 2.5rem) clamp(1.25rem, 0.8rem + 2vw, 2.5rem) 3rem;
+  background: #f5f7fa;
+  min-height: 100%;
+}
+
+.pp-apt-detail__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ink-900);
+  margin-bottom: 1.25rem;
+  line-height: 1.25;
+}
+
+.pp-apt-detail__cols {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  align-items: start;
+}
+
+.pp-apt-detail__left {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid var(--line-200);
+  overflow: hidden;
+}
+
+.pp-apt-detail__infobar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  align-items: center;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--line-100);
+  font-size: 0.8125rem;
+  color: var(--ink-500);
+}
+.pp-apt-detail__proj-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--brand-600);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pp-finish-tabs {
+  display: flex;
+  padding: 0.75rem 1.25rem;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line-100);
+}
+.pp-finish-tab {
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--line-200);
+  background: #f5f7fa;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-500);
+  cursor: pointer;
+}
+.pp-finish-tab--on {
+  background: var(--brand-600);
+  color: #fff;
+  border-color: var(--brand-600);
+}
+
+.pp-apt-detail__plan { padding: 1.25rem; }
+
+/* ─── Right price panel ─── */
+.pp-apt-detail__right {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid var(--line-200);
+  padding: 1.5rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.pp-apt-detail__price {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #2e7d32;
+  margin-bottom: 0.2rem;
+}
+.pp-apt-detail__oldprice {
+  font-size: 0.875rem;
+  color: var(--ink-400);
+  text-decoration: line-through;
+  margin-bottom: 0.75rem;
+}
+.pp-apt-detail__price-note {
+  font-size: 0.8rem;
+  color: var(--ink-400);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line-100);
+}
+
+.pp-apt-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 0;
+  border: none;
+  border-bottom: 1px solid var(--line-100);
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0;
+}
+.pp-apt-option__main { font-size: 0.9375rem; font-weight: 600; color: var(--ink-700); flex: 1; }
+.pp-apt-option__sub { font-size: 0.75rem; color: var(--ink-400); }
+.pp-apt-option__arr { color: var(--ink-400); font-size: 1.1rem; }
+
+.pp-payment-title { font-size: 1rem; font-weight: 700; color: var(--ink-900); margin: 1rem 0 0.75rem; }
+.pp-payment-opt {
+  border-radius: 12px;
+  border: 1.5px solid var(--line-200);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+.pp-payment-opt--on { border-color: var(--brand-500); background: rgba(0,96,254,0.04); }
+.pp-payment-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+.pp-payment-radio {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--line-200);
+  background: transparent;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+.pp-payment-radio--on {
+  border-color: var(--brand-600);
+  background: var(--brand-600);
+}
+.pp-payment-row > span:nth-child(2) { font-size: 0.9rem; font-weight: 600; flex: 1; }
+.pp-payment-discount {
+  background: rgba(34,197,94,0.15);
+  color: #15803d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+.pp-payment-label { font-size: 0.8125rem; color: var(--ink-500); margin-bottom: 0.3rem; }
+.pp-payment-sub { font-size: 0.75rem; color: var(--ink-400); line-height: 1.5; }
+
+.pp-apt-book { margin-top: 0.5rem; }
+
+/* ─── Specs table ─── */
+.pp-apt-specs {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid var(--line-200);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.pp-apt-spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.9rem;
+  gap: 1rem;
+}
+.pp-apt-spec-row:not(:last-child) { border-bottom: 1px solid var(--line-100); }
+.pp-apt-spec-row > span:first-child { color: var(--ink-500); }
+.pp-apt-spec-row > span:last-child { font-weight: 500; color: var(--ink-700); text-align: right; }
+
+/* ─── Room price cards ─── */
+.pp-room-prices {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.pp-room-price-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1.5px solid var(--line-200);
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color 0.15s;
+  position: relative;
+}
+.pp-room-price-card:hover { border-color: var(--brand-400); }
+.pp-room-price__val { font-size: 0.9rem; font-weight: 700; color: var(--brand-600); }
+.pp-room-price__label { font-size: 0.8rem; color: var(--ink-500); }
+.pp-room-price__arr { position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--ink-400); }
+
+/* ─── Similar apartments ─── */
+.pp-apt-similar__title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ink-900);
+  margin-bottom: 1rem;
+}
+.pp-apt-similar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+/* ─── Room price card active state ─── */
+.pp-room-price-card--on {
+  border-color: var(--brand-500);
+  background: rgba(0,96,254,0.05);
+}
+.pp-room-price-card--on .pp-room-price__val { color: var(--brand-700); }
+.pp-room-price__rooms { font-size: 1rem; font-weight: 800; color: var(--ink-900); }
+
+/* ─── Chess (шахматка) view ─── */
+.pp-apt-grid--chess { grid-template-columns: repeat(2, 1fr); }
+.pp-apt-grid--chess .pp-apt-card { flex-direction: row; max-height: 130px; overflow: hidden; }
+.pp-apt-grid--chess .pp-apt-card__hd { padding: 0.75rem 0.75rem 0; min-width: 100px; }
+.pp-apt-grid--chess .pp-apt-card__plan { padding: 0.5rem; width: 90px; flex-shrink: 0; }
+.pp-apt-grid--chess .pp-apt-card__tags { display: none; }
+.pp-apt-grid--chess .pp-apt-card__cta { writing-mode: vertical-rl; width: 32px; flex-shrink: 0; }
+
+/* ─── Inline SVG icon sizing ─── */
+.pp-ic { vertical-align: middle; flex-shrink: 0; }
+.pp-fbtn .pp-ic, .pp-sbtn .pp-ic { margin-left: 0.35rem; }
+.pp-vbtn .pp-ic { display: block; }
+
+/* ─── Filter button with icon prefix ─── */
+.pp-fbtn--all { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+/* ─── Infobar tags ─── */
+.pp-infobar-tag {
+  font-size: 0.75rem;
+  background: var(--surface-app);
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  color: var(--ink-500);
+  white-space: nowrap;
+}
+
+.pp-apt-option:last-of-type { border-bottom: none; }
+.pp-apt-option--active { background: rgba(0,96,254,0.03); border-radius: 10px; }
+.pp-apt-option__ic { flex-shrink: 0; }
+.pp-apt-option__body { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+
+
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+  .pp-apt-grid { grid-template-columns: repeat(2, 1fr); }
+  .pp-apt-grid--chess { grid-template-columns: 1fr; }
+  .pp-apt-detail__cols { grid-template-columns: 1fr; }
+  .pp-apt-detail__right { position: static; }
+  .pp-room-prices { grid-template-columns: repeat(2, 1fr); }
+  .pp-apt-similar { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 580px) {
+  .pp-apt-grid { grid-template-columns: 1fr; }
+  .pp-room-prices { grid-template-columns: 1fr 1fr; }
+  .pp-apt-similar { grid-template-columns: 1fr; }
+  .pp-proj-banner { flex-direction: column; align-items: flex-start; }
+  .pp-apt-detail__title { font-size: 1.2rem; }
+  .pp-catalog-filters { gap: 0.4rem; }
+  .pp-catalog-toolbar { flex-direction: column; align-items: flex-start; }
+}
+
