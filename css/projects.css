@@ -297,6 +297,10 @@
   border-left-color: rgba(255, 255, 255, 0.18);
 }
 
+.p-card--dark .p-card__price {
+  color: #5b9dff; /* lighter blue for AA contrast on the dark card */
+}
+
 .p-card--dark .btn--card {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.24);

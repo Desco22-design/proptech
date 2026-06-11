@@ -169,11 +169,19 @@
 }
 
 .promo__dot {
+  position: relative;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.45);
   transition: width var(--dur-normal), background var(--dur-normal);
+}
+
+/* enlarge the tap target to >=24px without changing the visual dot */
+.promo__dot::before {
+  content: "";
+  position: absolute;
+  inset: -9px -6px;
 }
 
 .promo__dot.is-active {

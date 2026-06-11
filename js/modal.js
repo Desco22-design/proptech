@@ -42,18 +42,57 @@
   var panel   = document.getElementById('pagePanel');
   var pBody   = document.getElementById('panelBody');
   var pClose  = document.getElementById('panelClose');
+  var panelStack = [];  // navigation history for the Back button
+
+  function setPanel(html) {
+    pBody.innerHTML = '<div class="pp-sheet">' + html + '</div>';
+    pBody.scrollTop = 0;
+  }
 
   function openPanel(html) {
-    pBody.innerHTML = html;
+    panelStack = [];
+    setPanel(html);
     panel.hidden = false;
     requestAnimationFrame(function () {
       panel.classList.add('is-open');
     });
     document.body.style.overflow = 'hidden';
     wirePanelButtons();
+    updateBackLabel();
+  }
+
+  /* Open a panel page; if a panel is already open, remember the current
+     page so the Back button returns to it instead of closing everything. */
+  function showPanelPage(html) {
+    if (!panel.hidden) {
+      panelStack.push(pBody.innerHTML);
+      setPanel(html);
+      wirePanelButtons();
+      updateBackLabel();
+    } else {
+      openPanel(html);
+    }
+  }
+
+  /* Back button: step one page back, or close if at the first page. */
+  function goBack() {
+    if (panelStack.length) {
+      pBody.innerHTML = panelStack.pop();
+      pBody.scrollTop = 0;
+      wirePanelButtons();
+      updateBackLabel();
+    } else {
+      closePanel();
+    }
+  }
+
+  function updateBackLabel() {
+    // tiny affordance: keep label "Назад" always, but expose depth via title
+    pClose.setAttribute('title', panelStack.length ? 'Вернуться назад' : 'Закрыть');
   }
 
   function closePanel() {
+    panelStack = [];
     panel.classList.remove('is-open');
     setTimeout(function () {
       panel.hidden = true;
@@ -62,7 +101,7 @@
     }, 300);
   }
 
-  pClose.addEventListener('click', closePanel);
+  pClose.addEventListener('click', goBack);
 
   /* ─────────────────────────────────────
      Shared utils
@@ -165,7 +204,7 @@
       '</div>' +
       '<div class="pp-content">' +
         '<h1 class="pp-title">' + name + '</h1>' +
-        '<p class="pp-addr">📍 ' + addr + '</p>' +
+        '<p class="pp-addr"><span class="ic ic--location"></span>' + addr + '</p>' +
         '<div class="pp-specs">' +
           '<div class="pp-spec"><span class="pp-spec__label">Цена от</span><span class="pp-spec__val">' + fmt(price) + ' млн UZS</span></div>' +
           '<div class="pp-spec"><span class="pp-spec__label">Этажность</span><span class="pp-spec__val">' + floors + '</span></div>' +
@@ -270,12 +309,12 @@
       '</div>' +
       '<div class="pp-partners">' +
       '<div class="pp-partner-perks">' +
-        '<div class="pp-perk"><div class="pp-perk__icon">💼</div><h3>Комиссия до 3%</h3><p>Выплачиваем вознаграждение с каждой успешной сделки от суммы договора.</p></div>' +
-        '<div class="pp-perk"><div class="pp-perk__icon">📊</div><h3>Личный кабинет</h3><p>Отслеживайте статус сделок, лиды и выплаты в режиме реального времени.</p></div>' +
-        '<div class="pp-perk"><div class="pp-perk__icon">🎓</div><h3>Обучение</h3><p>Регулярные тренинги по продукту, технике продаж и работе с клиентами.</p></div>' +
-        '<div class="pp-perk"><div class="pp-perk__icon">🤝</div><h3>Менеджер-куратор</h3><p>Персональный менеджер поможет на каждом этапе сделки.</p></div>' +
-        '<div class="pp-perk"><div class="pp-perk__icon">📋</div><h3>Эксклюзивные материалы</h3><p>Презентации, прайсы и медиа-кит — всё для успешных показов.</p></div>' +
-        '<div class="pp-perk"><div class="pp-perk__icon">⚡</div><h3>Быстрая регистрация</h3><p>Подключение к программе за один рабочий день.</p></div>' +
+        '<div class="pp-perk"><div class="pp-perk__icon"><span class="ic ic--wallet"></span></div><h3>Комиссия до 3%</h3><p>Выплачиваем вознаграждение с каждой успешной сделки от суммы договора.</p></div>' +
+        '<div class="pp-perk"><div class="pp-perk__icon"><span class="ic ic--chart"></span></div><h3>Личный кабинет</h3><p>Отслеживайте статус сделок, лиды и выплаты в режиме реального времени.</p></div>' +
+        '<div class="pp-perk"><div class="pp-perk__icon"><span class="ic ic--teacher"></span></div><h3>Обучение</h3><p>Регулярные тренинги по продукту, технике продаж и работе с клиентами.</p></div>' +
+        '<div class="pp-perk"><div class="pp-perk__icon"><span class="ic ic--users"></span></div><h3>Менеджер-куратор</h3><p>Персональный менеджер поможет на каждом этапе сделки.</p></div>' +
+        '<div class="pp-perk"><div class="pp-perk__icon"><span class="ic ic--clipboard"></span></div><h3>Эксклюзивные материалы</h3><p>Презентации, прайсы и медиа-кит — всё для успешных показов.</p></div>' +
+        '<div class="pp-perk"><div class="pp-perk__icon"><span class="ic ic--flash"></span></div><h3>Быстрая регистрация</h3><p>Подключение к программе за один рабочий день.</p></div>' +
       '</div>' +
       '<div class="pp-partner-form">' +
         '<h3>Стать партнёром</h3>' +
@@ -368,17 +407,17 @@
 
   function tplInfra() {
     var items = [
-      { e: '🏫', l: 'Школы и детсады' }, { e: '🏥', l: 'Поликлиники' },
-      { e: '🛒', l: 'Супермаркеты' },    { e: '🚌', l: 'Транспорт' },
-      { e: '🌳', l: 'Парки' },           { e: '🏋️', l: 'Фитнес-клубы' },
-      { e: '☕', l: 'Кафе и рестораны' },{ e: '🏦', l: 'Банки' },
+      { ic: 'teacher', l: 'Школы и детсады' }, { ic: 'hospital', l: 'Поликлиники' },
+      { ic: 'cart',    l: 'Супермаркеты' },    { ic: 'bus',      l: 'Транспорт' },
+      { ic: 'tree',    l: 'Парки' },           { ic: 'weight',   l: 'Фитнес-клубы' },
+      { ic: 'coffee',  l: 'Кафе и рестораны' },{ ic: 'bank',     l: 'Банки' },
     ];
     return '<div class="m-infra">' +
       '<h2 class="m-infra__title">Готовая инфраструктура</h2>' +
       '<p class="m-infra__sub">Всё необходимое — рядом с каждым нашим ЖК</p>' +
       '<div class="m-infra__grid">' +
       items.map(function (i) {
-        return '<div class="m-infra__item"><span class="m-infra__emoji">' + i.e + '</span><span>' + i.l + '</span></div>';
+        return '<div class="m-infra__item"><span class="ic ic--' + i.ic + ' m-infra__ic"></span><span>' + i.l + '</span></div>';
       }).join('') +
       '</div>' +
       '<button class="btn btn--primary btn--lg btn--block" id="modalCallbackBtn">Смотреть проекты</button>' +
@@ -406,10 +445,11 @@
      Dispatch
   ───────────────────────────────────── */
   function dispatch(type, ds) {
-    // Panel types
-    if (type === 'project') { openPanel(tplProjectPage(ds)); return; }
+    // Panel types — showPanelPage keeps a Back history when navigating
+    // from one panel page to another (e.g. project → Ипотека → Назад).
+    if (type === 'project') { showPanelPage(tplProjectPage(ds)); return; }
     if (type === 'floors') {
-      openPanel(tplProjectPage(ds));
+      showPanelPage(tplProjectPage(ds));
       // Scroll to floor plans section after render
       setTimeout(function () {
         var sec = pBody.querySelector('.pp-section');
@@ -417,19 +457,11 @@
       }, 420);
       return;
     }
-    if (type === 'promo')     { openPanel(tplPromoPage());     return; }
-    if (type === 'mortgage')  { openPanel(tplMortgagePage());  return; }
-    if (type === 'partners')  { openPanel(tplPartnersPage());  return; }
-    if (type === 'online')    { openPanel(tplOnlinePage());    return; }
-
-    // Small modal from within a panel (mortgage/promo)
-    if (type === 'promo-panel') {
-      // reuse promo page content but inside the current panel
-      pBody.innerHTML = tplPromoPage();
-      wirePanelButtons();
-      pBody.scrollTop = 0;
-      return;
-    }
+    if (type === 'promo')     { showPanelPage(tplPromoPage());     return; }
+    if (type === 'mortgage')  { showPanelPage(tplMortgagePage());  return; }
+    if (type === 'partners')  { showPanelPage(tplPartnersPage());  return; }
+    if (type === 'online')    { showPanelPage(tplOnlinePage());    return; }
+    if (type === 'promo-panel') { showPanelPage(tplPromoPage());   return; }
 
     // Small modal types
     if (type === 'invest')    { openModal(tplInvest(), 'sm'); wireBtn('modalCallbackBtn', function () { closeModal(); }); return; }
@@ -450,7 +482,7 @@
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (!mOverlay.hidden) closeModal();
-    else if (!panel.hidden) closePanel();
+    else if (!panel.hidden) goBack();
   });
 
 })();

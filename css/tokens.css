@@ -22,7 +22,7 @@
   --ink-900: #1d1d1f;         /* headings */
   --ink-700: #363c48;         /* body strong */
   --ink-500: #4c4d52;         /* secondary text */
-  --ink-400: #84858c;         /* muted / labels */
+  --ink-400: #6b6c75;         /* muted / labels — AA-compliant on light */
   --line-200: #e6e6e7;        /* borders */
   --line-100: #eceff3;
 

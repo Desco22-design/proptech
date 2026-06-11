@@ -136,9 +136,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  min-height: 40px;
   border: 1.5px solid var(--line-200);
   border-radius: var(--radius-pill);
-  padding: 0.25rem 0.7rem 0.25rem 0.25rem;
+  padding: 0.25rem 0.7rem 0.25rem 0.3rem;
   transition: border-color var(--dur-fast);
 }
 

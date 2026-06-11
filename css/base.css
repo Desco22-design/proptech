@@ -18,6 +18,7 @@ html {
 }
 
 body {
+  position: relative;
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
@@ -27,6 +28,19 @@ body {
   text-rendering: optimizeLegibility;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* Ambient atmosphere — soft brand light pooling behind the content field */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(48% 38% at 8% -6%, rgba(0, 96, 254, 0.09), transparent 68%),
+    radial-gradient(42% 34% at 102% 4%, rgba(106, 61, 240, 0.07), transparent 70%),
+    radial-gradient(60% 50% at 50% 118%, rgba(0, 96, 254, 0.05), transparent 72%);
 }
 
 img,
@@ -88,12 +102,57 @@ ul {
   padding-block: var(--space-section);
 }
 
+/* keep anchored sections clear of the sticky header on jump */
+[id] {
+  scroll-margin-top: calc(var(--header-h) + 1.25rem);
+}
+
 .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--brand-600);
+  color: var(--brand-700); /* AA contrast on light app background */
+}
+
+.eyebrow .ic {
+  width: 1.3em;
+  height: 1.3em;
+}
+
+.eyebrow--center { justify-content: center; }
+
+.eyebrow--invert { color: rgba(255, 255, 255, 0.92); }
+
+/* --- Section header rhythm --- */
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 680px;
+  margin-bottom: var(--space-6);
+}
+
+.section-head--center {
+  max-width: 720px;
+  margin-inline: auto;
+  text-align: center;
+  align-items: center;
+}
+
+.section-head__title {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-extrabold);
+  line-height: 1.08;
+}
+
+.section-head__sub {
+  color: var(--ink-500);
+  font-size: var(--text-lg);
+  max-width: 58ch;
 }
 
 .muted {
