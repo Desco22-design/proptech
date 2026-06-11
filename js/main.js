@@ -77,10 +77,15 @@
   document.addEventListener("click", () => lang.classList.remove("is-open"));
 
   /* ---------- Office selection ---------- */
-  document.querySelectorAll(".office").forEach((o) => {
+  const mapIframe = document.querySelector(".contacts__map iframe");
+  document.querySelectorAll(".office[data-ll]").forEach((o) => {
     o.addEventListener("click", () => {
       document.querySelectorAll(".office").forEach((x) => x.classList.remove("is-active"));
       o.classList.add("is-active");
+      if (mapIframe) {
+        const ll = o.dataset.ll;
+        mapIframe.src = `https://yandex.uz/map-widget/v1/?ll=${ll}&z=16&pt=${ll},pm2dbm`;
+      }
     });
   });
 
