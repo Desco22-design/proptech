@@ -574,14 +574,16 @@
 }
 .pp-back:hover { color: var(--brand-600); background: #f0f4ff; }
 
-/* Body */
+/* Body = the page scroll surface, with a clear backdrop behind the card */
 .pp-body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  background: var(--surface-app);
-  padding: clamp(1rem, 0.5rem + 2vw, 2.5rem)
+  background:
+    radial-gradient(1200px 480px at 50% -8%, rgba(37, 135, 233, 0.12), transparent 60%),
+    linear-gradient(180deg, #e7ecf4 0%, #dfe5ee 100%);
+  padding: clamp(1.25rem, 0.6rem + 2.4vw, 2.75rem)
            clamp(0.85rem, 0.4rem + 2vw, 2rem)
            clamp(2.5rem, 2rem + 3vw, 4rem);
 }
@@ -597,16 +599,18 @@
   box-shadow: var(--shadow-lg);
   box-sizing: border-box;
   opacity: 0;
-  transform: translateY(18px);
-  animation: ppSheetIn 0.5s var(--ease-out) 0.04s forwards;
+  animation: ppSheetIn 0.45s var(--ease-out) 0.04s forwards;
+  /* NB: no transform here — a transformed ancestor would capture the
+     filter modal's position:fixed and mis-anchor it. Fade only. */
 }
 
 @keyframes ppSheetIn {
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pp-sheet { animation: none; opacity: 1; transform: none; }
+  .pp-sheet { animation: none; opacity: 1; }
 }
 
 /* Inner blocks fill the sheet; the sheet controls max-width */
@@ -1054,76 +1058,357 @@
   min-height: 100%;
 }
 
+.pp-catalog-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
 .pp-catalog-title {
   font-size: 2rem;
   font-weight: 800;
   color: var(--ink-900);
-  margin-bottom: 1.25rem;
+  margin: 0;
 }
-
-.pp-catalog-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  align-items: center;
-}
-
-.pp-fbtn {
-  height: 36px;
-  padding: 0 1rem;
+.pp-catalog-badge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--brand-600);
+  background: rgba(0, 96, 254, 0.08);
   border-radius: 100px;
+  padding: 0.3rem 0.85rem;
+}
+
+/* Toolbar right cluster: filter button + view toggle */
+.pp-toolbar-right { display: flex; align-items: center; gap: 0.6rem; }
+
+.pp-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 40px;
+  padding: 0 1rem;
+  border-radius: 11px;
   border: 1.5px solid var(--line-200);
   background: #fff;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ink-700);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
   white-space: nowrap;
 }
-.pp-fbtn:hover { border-color: var(--brand-400); }
-.pp-fbtn--on { border-color: var(--brand-500); color: var(--brand-600); background: rgba(0,96,254,0.05); }
-.pp-farr { font-size: 0.7rem; margin-left: 0.3rem; }
-.pp-freset { background: none; border: none; color: var(--ink-400); font-size: 0.875rem; cursor: pointer; padding: 0 0.5rem; }
-.pp-freset:hover { color: var(--ink-700); }
+.pp-filter-btn .pp-ic { color: var(--ink-500); }
+.pp-filter-btn:hover { border-color: var(--brand-400); background: #f7f9ff; }
+.pp-filter-btn:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }
+.pp-filter-btn--on {
+  border-color: var(--brand-400);
+  color: var(--brand-700);
+  background: rgba(0, 96, 254, 0.06);
+}
+.pp-filter-btn--on .pp-ic { color: var(--brand-600); }
+.pp-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--brand-600);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+/* class display:inline-flex would otherwise override the hidden attribute */
+.pp-filter-count[hidden] { display: none; }
 
 .pp-catalog-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  flex-wrap: nowrap;          /* keep the whole bar on one line */
+  gap: 0.75rem;
 }
 
-.pp-sorts { display: flex; gap: 0.5rem; }
+.pp-sort {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;               /* allow the sort group to shrink, not wrap */
+}
+.pp-sorts {
+  overflow-x: auto;          /* scroll the sort buttons instead of wrapping */
+  scrollbar-width: none;
+}
+.pp-sorts::-webkit-scrollbar { display: none; }
+.pp-toolbar-right { flex-shrink: 0; }
+.pp-sort__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-400);
+  white-space: nowrap;
+}
+
+/* Shared segmented control (sort + view toggle) */
+.pp-seg {
+  display: inline-flex;
+  gap: 0.2rem;
+  background: #f1f4f9;
+  border-radius: 11px;
+  padding: 0.25rem;
+}
 .pp-sbtn {
-  height: 36px;
-  padding: 0 1rem;
-  border-radius: 100px;
-  border: 1.5px solid var(--line-200);
-  background: #fff;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--ink-700);
-  cursor: pointer;
-}
-.pp-sbtn--on { border-color: var(--brand-500); color: var(--brand-600); background: rgba(0,96,254,0.05); }
-
-.pp-views { display: flex; gap: 0.25rem; }
-.pp-vbtn {
-  height: 36px;
-  padding: 0 1rem;
+  height: 32px;
+  padding: 0 0.85rem;
   border-radius: 8px;
-  border: 1.5px solid var(--line-200);
-  background: #fff;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--ink-500);
   cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
 }
-.pp-vbtn--on { background: var(--brand-600); color: #fff; border-color: var(--brand-600); }
+.pp-sbtn:hover { color: var(--ink-700); }
+.pp-sbtn--on { background: #fff; color: var(--brand-600); box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1); }
+
+.pp-vbtn {
+  width: 40px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--ink-400);
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), transform 0.12s var(--ease-out);
+}
+.pp-vbtn .ic { width: 18px; height: 18px; transition: transform 0.2s var(--ease-out); }
+.pp-vbtn:hover { color: var(--ink-700); }
+.pp-vbtn:active { transform: scale(0.92); }
+.pp-vbtn--on {
+  background: #fff;
+  color: var(--brand-600);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.04);
+}
+.pp-vbtn--on .ic { transform: scale(1.04); }
+.pp-vbtn:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }
+
+/* ─── Filter modal ─── */
+.pp-fmodal { position: fixed; inset: 0; z-index: 880; }
+.pp-fmodal[hidden] { display: none; }
+.pp-fmodal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 19, 48, 0.5);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.22s;
+}
+.pp-fmodal.is-open .pp-fmodal__backdrop { opacity: 1; }
+
+.pp-fmodal__sheet {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(560px, calc(100vw - 2rem));
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.28);
+  transform: translate(-50%, -46%) scale(0.97);
+  opacity: 0;
+  transition: transform 0.26s var(--ease-out), opacity 0.22s;
+}
+.pp-fmodal.is-open .pp-fmodal__sheet { transform: translate(-50%, -50%); opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .pp-fmodal__sheet, .pp-fmodal__backdrop { transition: none; }
+}
+
+.pp-fmodal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--line-100);
+  flex-shrink: 0;
+}
+.pp-fmodal__title { font-size: 1.15rem; font-weight: 800; color: var(--ink-900); margin: 0; }
+.pp-fmodal__close {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: #f1f4f9;
+  color: var(--ink-500);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.pp-fmodal__close:hover { background: var(--line-200); color: var(--ink-900); }
+
+.pp-fmodal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.25rem 1.5rem 0.75rem;
+  scrollbar-width: thin;
+}
+.pp-fgroup { padding: 1.05rem 0; border-bottom: 1px solid var(--line-100); }
+.pp-fgroup:last-child { border-bottom: none; }
+.pp-fgroup__t {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 0.75rem;
+}
+.pp-fradios { display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; }
+.pp-fchecks { display: flex; flex-direction: column; gap: 0.1rem; }
+
+.pp-fmodal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--line-100);
+  flex-shrink: 0;
+}
+.pp-freset {
+  background: none;
+  border: none;
+  color: var(--ink-500);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem 0.25rem;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.pp-freset:hover { color: var(--brand-600); }
+.pp-fmodal__apply {
+  flex: 1;
+  max-width: 340px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: var(--brand-600);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+}
+.pp-fmodal__apply:hover { background: var(--brand-700); }
+.pp-fmodal__apply:active { transform: scale(0.98); }
+
+.pp-dd-radio,
+.pp-dd-check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.4rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.pp-dd-radio:hover,
+.pp-dd-check:hover { background: #f5f7fc; }
+.pp-dd-radio input,
+.pp-dd-check input { accent-color: var(--brand-600); width: 16px; height: 16px; cursor: pointer; }
+.pp-dd-hint { font-size: 0.75rem; color: var(--ink-400); padding: 0.4rem 0.4rem 0; }
+
+.pp-dd-range {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pp-dd-input {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 0.75rem;
+  border: 1.5px solid var(--line-200);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink-900);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pp-dd-input:focus {
+  outline: none;
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 3px rgba(59, 102, 255, 0.12);
+}
+.pp-dd-dash { color: var(--ink-400); }
+
+.pp-dd-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+.pp-dd-chip,
+.pp-dd-room {
+  height: 34px;
+  padding: 0 0.85rem;
+  border-radius: 9px;
+  border: 1.5px solid var(--line-200);
+  background: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.pp-dd-chip:hover,
+.pp-dd-room:hover { border-color: var(--brand-400); }
+.pp-dd-chip--on,
+.pp-dd-room--on {
+  border-color: var(--brand-500);
+  background: rgba(0, 96, 254, 0.07);
+  color: var(--brand-700);
+}
+
+.pp-dd-rooms { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+/* ─── Empty state ─── */
+.pp-catalog-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: #fff;
+  border: 1px dashed var(--line-200);
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+}
+.pp-catalog-empty__icon {
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f1f4f9;
+  color: var(--ink-400);
+  margin-bottom: 0.85rem;
+}
+.pp-catalog-empty__icon .pp-ic { width: 20px; height: 20px; }
+.pp-catalog-empty__t { font-size: 1.05rem; font-weight: 800; color: var(--ink-900); margin-bottom: 0.35rem; }
+.pp-catalog-empty__p { font-size: 0.875rem; color: var(--ink-500); margin: 0 0 1.1rem; }
 
 /* ─── Project banner ─── */
 .pp-proj-banner {
@@ -1139,65 +1424,146 @@
   gap: 1rem;
   min-height: 110px;
 }
-.pp-proj-banner__l { color: #fff; }
-.pp-proj-banner__name { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.3rem; }
-.pp-proj-banner__addr { font-size: 0.8125rem; opacity: 0.85; margin-bottom: 0.5rem; }
-.pp-proj-banner__r { display: flex; gap: 0.75rem; flex-shrink: 0; flex-wrap: wrap; }
+.pp-proj-banner__l { color: #fff; min-width: 0; flex: 1; }
+.pp-proj-banner__name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
+.pp-proj-banner__addr {
+  font-size: 0.8125rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.pp-proj-banner__r { display: flex; gap: 0.6rem; flex-shrink: 0; flex-wrap: wrap; }
+
+/* Banner buttons: frosted glass so they read on the dark photo */
+.pp-proj-banner .btn {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+.pp-proj-banner .btn:hover {
+  background: #fff;
+  color: var(--brand-700);
+  border-color: #fff;
+}
+.pp-proj-banner .btn:active { transform: scale(0.97); }
+.pp-proj-banner .btn .ic { color: currentColor; }
 
 /* ─── Apt card grid ─── */
 .pp-apt-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .pp-apt-card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1.5px solid var(--line-200);
   overflow: hidden;
   cursor: pointer;
-  transition: box-shadow 0.2s, border-color 0.15s;
+  transition: box-shadow 0.22s var(--ease-out), border-color 0.15s, transform 0.22s var(--ease-out);
   display: flex;
   flex-direction: column;
+  text-align: left;
+  font: inherit;
+  padding: 0;
+  width: 100%;
 }
-.pp-apt-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); border-color: var(--brand-400); }
+.pp-apt-card:hover {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  border-color: var(--brand-400);
+  transform: translateY(-3px);
+}
+.pp-apt-card:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
 
-.pp-apt-card__hd { padding: 0.85rem 0.9rem 0.35rem; }
-.pp-apt-label { font-size: 0.9375rem; font-weight: 700; color: var(--ink-900); }
+.pp-apt-card__top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem 0.4rem;
+}
+.pp-apt-card__rooms { font-size: 0.9375rem; font-weight: 700; color: var(--ink-900); }
+.pp-apt-card__sq { font-size: 0.8125rem; color: var(--ink-500); }
+.pp-apt-card__disc {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.14);
+  border-radius: 7px;
+  padding: 0.18rem 0.45rem;
+}
 
-.pp-apt-card__tags { padding: 0 0.9rem 0.5rem; display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.pp-apt-tag { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 100px; }
-.pp-apt-tag--cls { background: rgba(0,96,254,0.12); color: var(--brand-600); }
-.pp-apt-tag--promo { background: rgba(34,197,94,0.15); color: #16a34a; }
-
-.pp-apt-card__plan { padding: 0 0.9rem 0.5rem; flex: 1; }
+.pp-apt-card__plan {
+  padding: 0.25rem 1.1rem 0.6rem;
+  background: linear-gradient(180deg, #f7f9ff 0%, #fff 100%);
+}
 .pp-apt-card__plan svg { width: 100%; height: auto; display: block; }
 
-.pp-apt-card__pr {
-  padding: 0.5rem 0.9rem 0.25rem;
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  flex-wrap: wrap;
+.pp-apt-card__price {
+  padding: 0.6rem 1rem 0;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--ink-900);
+  letter-spacing: -0.01em;
 }
-.pp-apt-price { font-size: 0.9375rem; font-weight: 700; color: #2e7d32; }
-.pp-apt-old { font-size: 0.75rem; color: var(--ink-400); text-decoration: line-through; }
-.pp-apt-dots { margin-left: auto; color: var(--ink-400); font-size: 1rem; cursor: pointer; }
-
-.pp-apt-card__proj { padding: 0 0.9rem; font-size: 0.8125rem; color: var(--ink-500); }
-.pp-apt-card__info { padding: 0.15rem 0.9rem 0.75rem; font-size: 0.75rem; color: var(--ink-400); }
-
-.pp-apt-card__cta {
-  margin-top: auto;
-  background: linear-gradient(135deg, var(--brand-700) 0%, var(--brand-600) 100%);
-  color: #fff;
+.pp-apt-card__cur { font-size: 0.8125rem; font-weight: 700; color: var(--ink-500); }
+.pp-apt-card__old {
+  padding: 0.1rem 1rem 0;
+  font-size: 0.78rem;
+  color: var(--ink-400);
+  text-decoration: line-through;
+}
+.pp-apt-card__meta {
+  padding: 0.45rem 1rem 0.75rem;
   font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.65rem 0.9rem;
-  text-align: center;
+  color: var(--ink-500);
 }
+
+.pp-apt-card__foot {
+  margin-top: auto;
+  border-top: 1px solid var(--line-100);
+  padding: 0.7rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.pp-apt-card__proj {
+  font-size: 0.75rem;
+  color: var(--ink-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pp-apt-card__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--brand-600);
+  white-space: nowrap;
+  transition: gap 0.18s var(--ease-out);
+}
+.pp-apt-card:hover .pp-apt-card__go { gap: 0.55rem; }
 
 /* ─── Catalog paging ─── */
 .pp-catalog-paging { text-align: center; margin-bottom: 1rem; }
@@ -1258,29 +1624,130 @@
   cursor: pointer;
 }
 
-.pp-finish-tabs {
+/* Plan bar: room id + finish segmented control */
+.pp-plan-bar {
   display: flex;
-  padding: 0.75rem 1.25rem;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--line-100);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 0.85rem;
+}
+.pp-plan-bar__id { display: flex; align-items: baseline; gap: 0.5rem; }
+.pp-plan-bar__rooms { font-size: 1.0625rem; font-weight: 800; color: var(--ink-900); }
+.pp-plan-bar__sq { font-size: 0.875rem; color: var(--ink-500); font-weight: 600; }
+
+.pp-finish-tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  background: #f1f4f9;
+  border-radius: 10px;
+  padding: 0.25rem;
 }
 .pp-finish-tab {
-  padding: 0.5rem 1.25rem;
+  padding: 0.4rem 0.9rem;
   border-radius: 8px;
-  border: 1.5px solid var(--line-200);
-  background: #f5f7fa;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--ink-500);
   cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
 }
+.pp-finish-tab:hover { color: var(--ink-700); }
 .pp-finish-tab--on {
-  background: var(--brand-600);
-  color: #fff;
-  border-color: var(--brand-600);
+  background: #fff;
+  color: var(--brand-600);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
 }
 
-.pp-apt-detail__plan { padding: 1.25rem; }
+.pp-finish-note {
+  margin: 0 1.25rem;
+  padding: 0.7rem 0.9rem;
+  background: #f7f9ff;
+  border-left: 3px solid var(--brand-400);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-500);
+}
+
+.pp-apt-detail__plan {
+  padding: 1.25rem 1.5rem;
+  background:
+    linear-gradient(#eef2fa 1px, transparent 1px) 0 0 / 26px 26px,
+    linear-gradient(90deg, #eef2fa 1px, transparent 1px) 0 0 / 26px 26px,
+    #fbfcfe;
+  margin: 1rem 1.25rem 0;
+  border-radius: 12px;
+  border: 1px solid var(--line-100);
+}
+
+/* Quick facts under the plan */
+.pp-plan-facts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  padding: 1rem 1.25rem 0;
+}
+.pp-fact {
+  background: #f7f9fc;
+  border-radius: 10px;
+  padding: 0.65rem 0.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.pp-fact__label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-400);
+}
+.pp-fact__val { font-size: 0.875rem; font-weight: 700; color: var(--ink-900); }
+
+/* Экспликация — room-by-room area breakdown */
+.pp-expl-wrap { padding: 1.25rem 1.25rem 1.5rem; }
+.pp-expl-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 0.6rem;
+}
+.pp-expl { list-style: none; margin: 0; padding: 0; }
+.pp-expl__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--line-100);
+}
+.pp-expl__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.pp-expl__dot--living  { background: #e8f1ff; border-color: #b6ccf0; }
+.pp-expl__dot--bed     { background: #eef4ff; border-color: #c4d4f3; }
+.pp-expl__dot--kitchen { background: #fdf2e3; border-color: #eccfa0; }
+.pp-expl__dot--wet     { background: #e2f3f4; border-color: #abd4d8; }
+.pp-expl__dot--hall    { background: #f3f6fb; border-color: #d7e0ee; }
+.pp-expl__name { flex: 1; color: var(--ink-700); }
+.pp-expl__area { font-weight: 600; color: var(--ink-900); font-variant-numeric: tabular-nums; }
+.pp-expl__row--total {
+  border-bottom: none;
+  margin-top: 0.3rem;
+  padding-top: 0.7rem;
+  border-top: 1.5px solid var(--line-200);
+}
+.pp-expl__row--total .pp-expl__name { font-weight: 700; color: var(--ink-900); }
+.pp-expl__row--total .pp-expl__area { color: var(--brand-600); font-size: 0.95rem; }
 
 /* ─── Right price panel ─── */
 .pp-apt-detail__right {
@@ -1293,17 +1760,45 @@
 }
 
 .pp-apt-detail__price {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  color: #2e7d32;
-  margin-bottom: 0.2rem;
+  color: var(--ink-900);
+  letter-spacing: -0.015em;
+  margin-bottom: 0.35rem;
+}
+.pp-apt-detail__cur { font-size: 1rem; font-weight: 700; color: var(--ink-500); }
+.pp-price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
 }
 .pp-apt-detail__oldprice {
   font-size: 0.875rem;
   color: var(--ink-400);
   text-decoration: line-through;
-  margin-bottom: 0.75rem;
 }
+.pp-disc-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.14);
+  border-radius: 7px;
+  padding: 0.15rem 0.45rem;
+}
+.pp-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.08);
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  margin-bottom: 0.85rem;
+}
+.pp-save .ic { width: 0.95em; height: 0.95em; color: #15803d; }
 .pp-apt-detail__price-note {
   font-size: 0.8rem;
   color: var(--ink-400);
@@ -1429,21 +1924,33 @@
 .pp-room-price-card--on .pp-room-price__val { color: var(--brand-700); }
 .pp-room-price__rooms { font-size: 1rem; font-weight: 800; color: var(--ink-900); }
 
-/* ─── Chess (шахматка) view ─── */
+/* ─── Chess (шахматка) view — compact horizontal cards ─── */
 .pp-apt-grid--chess { grid-template-columns: repeat(2, 1fr); }
-.pp-apt-grid--chess .pp-apt-card { flex-direction: row; max-height: 130px; overflow: hidden; }
-.pp-apt-grid--chess .pp-apt-card__hd { padding: 0.75rem 0.75rem 0; min-width: 100px; }
-.pp-apt-grid--chess .pp-apt-card__plan { padding: 0.5rem; width: 90px; flex-shrink: 0; }
-.pp-apt-grid--chess .pp-apt-card__tags { display: none; }
-.pp-apt-grid--chess .pp-apt-card__cta { writing-mode: vertical-rl; width: 32px; flex-shrink: 0; }
+.pp-apt-grid--chess .pp-apt-card {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  grid-template-areas: "plan top" "plan price" "plan foot";
+  align-items: center;
+  column-gap: 0.5rem;
+}
+.pp-apt-grid--chess .pp-apt-card__plan {
+  grid-area: plan;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 0.6rem;
+}
+.pp-apt-grid--chess .pp-apt-card__top { grid-area: top; padding: 0.7rem 0.9rem 0; }
+.pp-apt-grid--chess .pp-apt-card__price { grid-area: price; padding: 0.15rem 0.9rem 0; font-size: 0.95rem; }
+.pp-apt-grid--chess .pp-apt-card__old,
+.pp-apt-grid--chess .pp-apt-card__meta { display: none; }
+.pp-apt-grid--chess .pp-apt-card__foot { grid-area: foot; border-top: none; padding: 0.25rem 0.9rem 0.7rem; }
 
 /* ─── Inline SVG icon sizing ─── */
 .pp-ic { vertical-align: middle; flex-shrink: 0; }
-.pp-fbtn .pp-ic, .pp-sbtn .pp-ic { margin-left: 0.35rem; }
 .pp-vbtn .pp-ic { display: block; }
-
-/* ─── Filter button with icon prefix ─── */
-.pp-fbtn--all { display: inline-flex; align-items: center; gap: 0.4rem; }
+/* chevron / filter icon spacing handled by the button's flex `gap` */
+.pp-fbtn > span { line-height: 1; }
 
 /* ─── Infobar tags ─── */
 .pp-infobar-tag {
@@ -1475,9 +1982,76 @@
   .pp-apt-grid { grid-template-columns: 1fr; }
   .pp-room-prices { grid-template-columns: 1fr 1fr; }
   .pp-apt-similar { grid-template-columns: 1fr; }
-  .pp-proj-banner { flex-direction: column; align-items: flex-start; }
+  .pp-proj-banner { flex-direction: column; align-items: stretch; }
+  .pp-proj-banner__r { width: 100%; }
+  .pp-proj-banner__r .btn { flex: 1; justify-content: center; }
   .pp-apt-detail__title { font-size: 1.2rem; }
-  .pp-catalog-filters { gap: 0.4rem; }
-  .pp-catalog-toolbar { flex-direction: column; align-items: flex-start; }
+  .pp-catalog-toolbar { flex-direction: column; align-items: stretch; }
+  .pp-sort { width: 100%; gap: 0.5rem; }
+  .pp-sorts { overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+  .pp-sorts::-webkit-scrollbar { display: none; }
+  .pp-toolbar-right { justify-content: space-between; }
+  .pp-fmodal__sheet { width: calc(100vw - 1.5rem); max-height: 88vh; }
+  .pp-plan-bar { padding: 0.85rem 1rem 0.7rem; }
+  .pp-finish-tabs { width: 100%; }
+  .pp-finish-tab { flex: 1; text-align: center; }
+  .pp-plan-facts { grid-template-columns: repeat(2, 1fr); }
+  .pp-apt-detail__plan { margin: 1rem 1rem 0; padding: 1rem; }
+  .pp-finish-note { margin: 0 1rem; }
+  .pp-expl-wrap { padding: 1.25rem 1rem 1.5rem; }
+}
+
+/* ============================================================
+   FOOTER — inside panel pages + small modals
+   (reuses .footer__top / __col / __about / __socials / __bottom
+    from info.css; only colour + container differ here)
+   ============================================================ */
+.pp-footer {
+  max-width: 1040px;
+  margin: clamp(1.5rem, 1rem + 2vw, 2.5rem) auto 0;
+  background: var(--navy-900);
+  color: rgba(255, 255, 255, 0.78);
+  border-radius: var(--radius-2xl);
+  padding: clamp(1.75rem, 1.2rem + 2vw, 2.5rem)
+           clamp(1.5rem, 1rem + 2vw, 2.5rem)
+           clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  box-sizing: border-box;
+}
+.pp-footer .footer__top { margin: 0; }
+.pp-footer .pp-footer__brand .logo--invert { font-size: 1.35rem; }
+.pp-footer .footer__bottom { padding-top: 1.25rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .pp-footer .footer__social { transition: background 0.15s, transform 0.15s; }
+}
+
+/* ── Compact footer for the small centred modals ── */
+.m-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  padding: 1.1rem 2rem 1.6rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--line-100);
+}
+.m-footer__brand { font-size: 1.05rem; font-weight: 800; color: var(--ink-900); }
+.m-footer__brand .logo__accent { color: var(--brand-600); }
+.m-footer__copy { font-size: 0.75rem; color: var(--ink-400); }
+.m-footer__socials { margin: 0; gap: 0.45rem; }
+.m-footer__socials.footer__socials .footer__social {
+  width: 32px;
+  height: 32px;
+  background: var(--surface-app, #f1f4f9);
+  color: var(--ink-500);
+}
+.m-footer__socials.footer__socials .footer__social:hover {
+  background: var(--brand-600);
+  color: #fff;
+}
+.m-footer__socials.footer__socials .footer__social .ic { width: 15px; height: 15px; }
+
+@media (max-width: 560px) {
+  .m-footer { padding: 1rem 1.25rem 1.4rem; }
 }
 

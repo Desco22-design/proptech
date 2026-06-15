@@ -66,10 +66,10 @@
 }
 
 .filter-cell--search {
-  flex: 1.8;
+  flex: 2.5;
   flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: var(--ink-400);
 }
 
@@ -89,13 +89,20 @@
   font-weight: var(--weight-regular, 400);
 }
 
-.filter-cell--search svg {
+.filter-cell__ic {
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
-  color: var(--ink-400);
+  color: var(--brand-600);
+}
+
+.filter-bar__reset .ic {
+  width: 17px;
+  height: 17px;
 }
 
 .filter-cell--price {
-  flex: 1.4;
+  flex: 1.15;
 }
 
 .filter-cell__label {

@@ -13,12 +13,13 @@
   var mClose   = document.getElementById('modalClose');
 
   function openModal(html, size) {
-    mBody.innerHTML = html;
+    mBody.innerHTML = html + mFooterHtml();
     mBox.dataset.size = size || 'md';
     mOverlay.hidden = false;
     requestAnimationFrame(function () { mOverlay.classList.add('is-open'); });
     document.body.style.overflow = 'hidden';
     wireBtn('modalCallbackBtn', scrollCallback);
+    wireFooterLinks(mBody);
   }
 
   function closeModal() {
@@ -45,7 +46,7 @@
   var panelStack = [];  // navigation history for the Back button
 
   function setPanel(html) {
-    pBody.innerHTML = '<div class="pp-sheet">' + html + '</div>';
+    pBody.innerHTML = '<div class="pp-sheet">' + html + '</div>' + ppFooterHtml();
     pBody.scrollTop = 0;
   }
 
@@ -120,6 +121,71 @@
       var el = document.getElementById('callback');
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     }, 320);
+  }
+
+  /* ─────────────────────────────────────
+     Shared footer (added to every panel page + small modal)
+  ───────────────────────────────────── */
+  function footerSocials() {
+    return '<div class="footer__socials">'+
+      '<a class="footer__social" href="https://t.me/proptech_uz" target="_blank" rel="noopener" aria-label="Telegram"><span class="ic ic--send"></span></a>'+
+      '<a class="footer__social" href="#" aria-label="Instagram"><span class="ic ic--instagram"></span></a>'+
+      '<a class="footer__social" href="#" aria-label="YouTube"><span class="ic ic--youtube"></span></a>'+
+    '</div>';
+  }
+
+  function ppFooterHtml() {
+    return '<footer class="pp-footer">'+
+      '<div class="footer__top">'+
+        '<div class="pp-footer__brand">'+
+          '<a class="logo logo--invert" href="#"><span class="logo__word">Prop<span class="logo__accent">Tech</span></span></a>'+
+          '<p class="footer__about">Строим качественное жильё нового поколения в Ташкенте. Ваш комфорт — наш главный приоритет.</p>'+
+          footerSocials()+
+        '</div>'+
+        '<div class="footer__col">'+
+          '<h4>Покупателям</h4>'+
+          '<a href="#" data-modal="catalog">Планировки</a>'+
+          '<a href="#" data-modal="mortgage">Ипотека</a>'+
+          '<a href="#" data-modal="promo">Рассрочка</a>'+
+          '<a href="#" data-modal="promo">Акции</a>'+
+        '</div>'+
+        '<div class="footer__col">'+
+          '<h4>Компания</h4>'+
+          '<a href="#" data-modal="partners">Агентствам</a>'+
+          '<a href="#" class="pp-footer-cb">Консультация</a>'+
+          '<a href="#" class="pp-footer-cb">Оставить заявку</a>'+
+        '</div>'+
+        '<div class="footer__col">'+
+          '<h4>Контакты</h4>'+
+          '<a href="tel:7777">Колл-центр: 7777</a>'+
+          '<a href="https://t.me/proptech_uz" target="_blank" rel="noopener">Telegram</a>'+
+          '<a href="#" class="pp-footer-cb">просп. Амира Темура, 105</a>'+
+        '</div>'+
+      '</div>'+
+      '<div class="footer__bottom">'+
+        '<span>© 2026 PropTech. Все права защищены.</span>'+
+        '<span>Дизайн-демо. Изображения проектов схематичны.</span>'+
+      '</div>'+
+    '</footer>';
+  }
+
+  function mFooterHtml() {
+    return '<div class="m-footer">'+
+      '<span class="m-footer__brand">Prop<span class="logo__accent">Tech</span></span>'+
+      '<div class="footer__socials m-footer__socials">'+
+        '<a class="footer__social" href="https://t.me/proptech_uz" target="_blank" rel="noopener" aria-label="Telegram"><span class="ic ic--send"></span></a>'+
+        '<a class="footer__social" href="#" aria-label="Instagram"><span class="ic ic--instagram"></span></a>'+
+        '<a class="footer__social" href="#" aria-label="YouTube"><span class="ic ic--youtube"></span></a>'+
+      '</div>'+
+      '<span class="m-footer__copy">© 2026 PropTech</span>'+
+    '</div>';
+  }
+
+  /* Wire footer callback links inside a given root (panel or modal). */
+  function wireFooterLinks(root) {
+    (root || pBody).querySelectorAll('.pp-footer-cb').forEach(function (a) {
+      a.addEventListener('click', function (e) { e.preventDefault(); scrollCallback(); });
+    });
   }
 
   var IMG = 'https://images.unsplash.com/';
@@ -366,6 +432,9 @@
         if (btn) btn.addEventListener('click', scrollCallback);
       });
 
+      /* ── Footer callback links ── */
+      wireFooterLinks(pBody);
+
       /* ── Mortgage calculator ── */
       if (document.getElementById('calcPrice')) {
         calcMortgage();
@@ -375,76 +444,99 @@
         });
       }
 
-      /* ── CATALOG PAGE ── */
+      /* ── CATALOG PAGE — functional filters ── */
 
-      /* Filter buttons: toggle on/off */
-      pBody.querySelectorAll('.pp-fbtn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          if (this.dataset.filter === 'all') {
-            var allOn = pBody.querySelectorAll('.pp-fbtn.pp-fbtn--on').length === pBody.querySelectorAll('.pp-fbtn').length;
-            pBody.querySelectorAll('.pp-fbtn').forEach(function(b) {
-              b.classList.toggle('pp-fbtn--on', !allOn);
-            });
-          } else {
-            this.classList.toggle('pp-fbtn--on');
+      /* Filter modal: open / close */
+      var fBtn = pBody.querySelector('.pp-filter-btn');
+      if (fBtn) fBtn.addEventListener('click', openFilterModal);
+      pBody.querySelectorAll('[data-fclose]').forEach(function(b) {
+        b.addEventListener('click', closeFilterModal);
+      });
+      var fApply = pBody.querySelector('.pp-fmodal__apply');
+      if (fApply) fApply.addEventListener('click', closeFilterModal);
+
+      /* City / Type radios */
+      pBody.querySelectorAll('input[name="ddCity"]').forEach(function(r) {
+        r.addEventListener('change', function() { CF.city = this.value; CF.shown = CATALOG_PAGE; renderCatalog(); });
+      });
+      pBody.querySelectorAll('input[name="ddType"]').forEach(function(r) {
+        r.addEventListener('change', function() { CF.type = this.value; CF.shown = CATALOG_PAGE; renderCatalog(); });
+      });
+
+      /* Price range + presets */
+      var pMin = pBody.querySelector('#ddPriceMin'), pMax = pBody.querySelector('#ddPriceMax');
+      function readPrice() {
+        CF.priceMin = (pMin && pMin.value !== '') ? parseFloat(pMin.value) * 1e6 : null;
+        CF.priceMax = (pMax && pMax.value !== '') ? parseFloat(pMax.value) * 1e6 : null;
+        CF.shown = CATALOG_PAGE; renderCatalog();
+      }
+      if (pMin) pMin.addEventListener('input', readPrice);
+      if (pMax) pMax.addEventListener('input', readPrice);
+      pBody.querySelectorAll('.pp-price-presets .pp-dd-chip').forEach(function(c) {
+        c.addEventListener('click', function() {
+          var on = this.classList.contains('pp-dd-chip--on');
+          this.parentNode.querySelectorAll('.pp-dd-chip').forEach(function(s) { s.classList.remove('pp-dd-chip--on'); });
+          if (on) { if (pMin) pMin.value = ''; if (pMax) pMax.value = ''; }
+          else {
+            this.classList.add('pp-dd-chip--on');
+            if (pMin) pMin.value = this.dataset.pmin || '';
+            if (pMax) pMax.value = this.dataset.pmax || '';
           }
+          readPrice();
         });
       });
 
-      /* Reset filters */
-      var freset = pBody.querySelector('.pp-freset');
-      if (freset) {
-        freset.addEventListener('click', function() {
-          pBody.querySelectorAll('.pp-fbtn').forEach(function(b) { b.classList.remove('pp-fbtn--on'); });
+      /* Due checkboxes */
+      pBody.querySelectorAll('.pp-dd-due').forEach(function(c) {
+        c.addEventListener('change', function() {
+          CF.dueSel = Array.prototype.slice.call(pBody.querySelectorAll('.pp-dd-due:checked'))
+                        .map(function(x) { return x.value; });
+          CF.shown = CATALOG_PAGE; renderCatalog();
         });
-      }
+      });
 
-      /* Sort buttons: exclusive + re-render */
+      /* Rooms chips */
+      pBody.querySelectorAll('.pp-dd-room').forEach(function(b) {
+        b.addEventListener('click', function() {
+          var r = parseInt(this.dataset.room, 10), i = CF.rooms.indexOf(r);
+          if (i < 0) { CF.rooms.push(r); this.classList.add('pp-dd-room--on'); }
+          else { CF.rooms.splice(i, 1); this.classList.remove('pp-dd-room--on'); }
+          CF.shown = CATALOG_PAGE; renderCatalog();
+        });
+      });
+
+      /* Area range */
+      var aMin = pBody.querySelector('#ddAreaMin'), aMax = pBody.querySelector('#ddAreaMax');
+      function readArea() {
+        CF.areaMin = (aMin && aMin.value !== '') ? parseFloat(aMin.value) : null;
+        CF.areaMax = (aMax && aMax.value !== '') ? parseFloat(aMax.value) : null;
+        CF.shown = CATALOG_PAGE; renderCatalog();
+      }
+      if (aMin) aMin.addEventListener('input', readArea);
+      if (aMax) aMax.addEventListener('input', readArea);
+
+      /* Reset everything (modal footer + empty-state button) */
+      var freset = pBody.querySelector('.pp-freset');
+      if (freset) freset.addEventListener('click', resetCatalog);
+      var emptyReset = pBody.querySelector('.pp-empty-reset');
+      if (emptyReset) emptyReset.addEventListener('click', resetCatalog);
+
+      /* Sort segmented control */
       pBody.querySelectorAll('.pp-sbtn').forEach(function(btn) {
         btn.addEventListener('click', function() {
           pBody.querySelectorAll('.pp-sbtn').forEach(function(b) { b.classList.remove('pp-sbtn--on'); });
           this.classList.add('pp-sbtn--on');
-          var key = this.dataset.sort || '';
-          var grid = pBody.querySelector('#aptGrid');
-          if (!grid) return;
-          var shown = grid.querySelectorAll('.pp-apt-card').length;
-          var sorted = UNITS.slice().sort(function(a, b) {
-            if (key === 'due') return a.due.localeCompare(b.due);
-            if (key === 'price-asc') return a.price - b.price;
-            if (key === 'price-desc') return b.price - a.price;
-            return a.id - b.id;
-          });
-          grid.innerHTML = sorted.slice(0, shown).map(aptCardHtml).join('');
-        });
-      });
-
-      /* View toggle: grid / chess */
-      pBody.querySelectorAll('.pp-vbtn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          pBody.querySelectorAll('.pp-vbtn').forEach(function(b) { b.classList.remove('pp-vbtn--on'); });
-          this.classList.add('pp-vbtn--on');
-          var grid = pBody.querySelector('#aptGrid');
-          if (grid) grid.classList.toggle('pp-apt-grid--chess', this.dataset.view === 'chess');
+          CF.sort = this.dataset.sort || '';
+          renderCatalog();
         });
       });
 
       /* Load more */
       var moreBtn = pBody.querySelector('.pp-catalog-more');
-      if (moreBtn) {
-        moreBtn.addEventListener('click', function() {
-          var grid = pBody.querySelector('#aptGrid');
-          if (!grid) return;
-          var shown = grid.querySelectorAll('.pp-apt-card').length;
-          var next = UNITS.slice(shown % UNITS.length, (shown % UNITS.length) + 4);
-          if (!next.length) next = UNITS.slice(0, 4);
-          grid.insertAdjacentHTML('beforeend', next.map(aptCardHtml).join(''));
-          var newShown = shown + next.length;
-          var countEl = pBody.querySelector('.pp-catalog-count');
-          if (countEl) countEl.textContent = 'Показано ' + newShown + ' из 127';
-          var fill = pBody.querySelector('.pp-prog__fill');
-          if (fill) fill.style.width = Math.min(newShown / 127 * 100, 100) + '%';
-        });
-      }
+      if (moreBtn) moreBtn.addEventListener('click', function() { CF.shown += CATALOG_PAGE; renderCatalog(); });
+
+      /* Push any preset (e.g. rooms from a room-price card) onto the controls */
+      syncFilterUI();
 
       /* Catalog banner: open project page */
       var catalogProjBtn = document.getElementById('catalogProjBtn');
@@ -482,11 +574,17 @@
         });
       });
 
-      /* Finish tabs */
+      /* Finish tabs — swap the active state, aria-selected, and the note text */
       pBody.querySelectorAll('.pp-finish-tab').forEach(function(tab) {
         tab.addEventListener('click', function() {
-          pBody.querySelectorAll('.pp-finish-tab').forEach(function(t) { t.classList.remove('pp-finish-tab--on'); });
+          pBody.querySelectorAll('.pp-finish-tab').forEach(function(t) {
+            t.classList.remove('pp-finish-tab--on');
+            t.setAttribute('aria-selected', 'false');
+          });
           this.classList.add('pp-finish-tab--on');
+          this.setAttribute('aria-selected', 'true');
+          var note = document.getElementById('finishNote');
+          if (note && this.dataset.note) note.textContent = this.dataset.note;
         });
       });
 
@@ -604,6 +702,13 @@ function calcMortgage() {
     { id:11, rooms:2, area:63.75, price:1290000000, oldP:1467000000,  no:'115', floor:8,  totF:16, ent:2, due:'4 кв. 2027', proj:'Sky Gardens', addr:'г. Ташкент, Мирзо-Улугбекский район, просп. Амира Темура', img:'photo-1486325212027-8081e485255e', cls:'Бизнес' },
   ];
 
+  /* Spread completion dates across a few quarters so the «Срок сдачи»
+     filter and sort have real variety to act on (multi-building complex). */
+  (function () {
+    var quarters = ['2 кв. 2026', '4 кв. 2026', '2 кв. 2027', '4 кв. 2027'];
+    UNITS.forEach(function (u) { u.due = quarters[u.id % quarters.length]; });
+  })();
+
   function fmtU(n) {
     return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
@@ -613,134 +718,367 @@ function calcMortgage() {
   var I = {
     chvD: '<svg class="pp-ic" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     chvR: '<svg class="pp-ic" width="6" height="10" viewBox="0 0 6 10" fill="none"><path d="M1 1l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    flt:  '<svg class="pp-ic" width="14" height="12" viewBox="0 0 14 12" fill="none"><line x1="1" y1="2" x2="13" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="5.5" y1="10" x2="8.5" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
-    grid: '<svg class="pp-ic" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
-    chess:'<svg class="pp-ic" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="5.5" width="5" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="5.5" width="5" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="10" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
+    flt:  '<svg class="pp-ic" width="16" height="14" viewBox="0 0 14 12" fill="none"><line x1="1" y1="2" x2="13" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="5.5" y1="10" x2="8.5" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    close:'<svg class="pp-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+    grid: '<svg class="pp-ic" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.9"/><rect x="9" y="1" width="6" height="6" rx="1.9"/><rect x="1" y="9" width="6" height="6" rx="1.9"/><rect x="9" y="9" width="6" height="6" rx="1.9"/></svg>',
+    chess:'<svg class="pp-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="4.4" rx="1.6" stroke="currentColor" stroke-width="1.6"/><rect x="1.5" y="9.1" width="13" height="4.4" rx="1.6" stroke="currentColor" stroke-width="1.6"/></svg>',
     dots: '<svg class="pp-ic" width="16" height="4" viewBox="0 0 16 4" fill="currentColor"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="14" cy="2" r="1.5"/></svg>',
     bld:  '<svg class="pp-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 15V10h4v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5 7h1.5M9.5 7H11M5 5h1.5M9.5 5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
     call: '<svg class="pp-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2h2.5l1 3.5-1.5 1c.7 1.4 1.6 2.8 2.5 3.5l1.5-1 3.5 1V12.5C13 13.3 12.3 14 11.5 14 5.7 14 2 8.3 2 4.5A2.5 2.5 0 014 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     tag:  '<svg class="pp-ic" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 1.5h4.8L12.8 8l-4.3 4.3L2.2 5.7V1.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4.5" r="1" fill="currentColor"/></svg>'
   };
-  /* ── Detailed floor plan SVG for apt detail page ── */
-  function detailFloorSVG(rooms, area) {
+  /* ── Room layout config (shared by the SVG plan and the экспликация list) ── */
+  function roomConfig(rooms) {
     rooms = parseInt(rooms, 10) || 1;
-    var a = parseFloat(area) || 39.85;
     var cfgs = {
       1: [
-        { x:185, y:20, w:180, h:295, name:'Гостиная',  sq:17.43 },
-        { x:365, y:20, w:130, h:115, name:'Кухня',     sq:11.95 },
-        { x:365, y:135,w:75,  h:90,  name:'Ванная',    sq:4.95  },
-        { x:365, y:225,w:130, h:90,  name:'Прихожая',  sq:4.20  }
+        { x:20,  y:20,  w:180, h:295, name:'Гостиная',  sq:17.43, t:'living'  },
+        { x:200, y:20,  w:130, h:115, name:'Кухня',     sq:11.95, t:'kitchen' },
+        { x:200, y:135, w:75,  h:90,  name:'Санузел',   sq:4.95,  t:'wet'     },
+        { x:200, y:225, w:130, h:90,  name:'Прихожая',  sq:5.52,  t:'hall'    }
       ],
       2: [
-        { x:185, y:20, w:160, h:148, name:'Гостиная',  sq:17.43 },
-        { x:185, y:168,w:160, h:147, name:'Спальня',   sq:14.80 },
-        { x:345, y:20, w:150, h:115, name:'Кухня',     sq:12.50 },
-        { x:345, y:135,w:75,  h:85,  name:'Ванная',    sq:5.20  },
-        { x:345, y:220,w:150, h:95,  name:'Прихожая',  sq:5.80  }
+        { x:20,  y:20,  w:160, h:148, name:'Гостиная',  sq:17.43, t:'living'  },
+        { x:20,  y:168, w:160, h:147, name:'Спальня',   sq:14.80, t:'bed'     },
+        { x:180, y:20,  w:150, h:115, name:'Кухня',     sq:12.50, t:'kitchen' },
+        { x:180, y:135, w:75,  h:85,  name:'Санузел',   sq:5.20,  t:'wet'     },
+        { x:180, y:220, w:150, h:95,  name:'Прихожая',  sq:5.80,  t:'hall'    }
       ],
       3: [
-        { x:180, y:20, w:155, h:148, name:'Гостиная',  sq:20.50 },
-        { x:180, y:168,w:155, h:147, name:'Спальня 1', sq:16.20 },
-        { x:335, y:20, w:160, h:115, name:'Кухня',     sq:13.50 },
-        { x:335, y:135,w:80,  h:90,  name:'Ванная',    sq:5.50  },
-        { x:415, y:135,w:80,  h:90,  name:'Санузел',   sq:3.50  },
-        { x:335, y:225,w:160, h:90,  name:'Спальня 2', sq:14.00 }
+        { x:15,  y:20,  w:155, h:148, name:'Гостиная',  sq:20.50, t:'living'  },
+        { x:15,  y:168, w:155, h:147, name:'Спальня 1', sq:16.20, t:'bed'     },
+        { x:170, y:20,  w:160, h:115, name:'Кухня',     sq:13.50, t:'kitchen' },
+        { x:170, y:135, w:80,  h:90,  name:'Ванная',    sq:5.50,  t:'wet'     },
+        { x:250, y:135, w:80,  h:90,  name:'С/у',       sq:3.50,  t:'wet'     },
+        { x:170, y:225, w:160, h:90,  name:'Спальня 2', sq:14.00, t:'bed'     }
       ],
       4: [
-        { x:175, y:20, w:150, h:148, name:'Гостиная',  sq:22.00 },
-        { x:175, y:168,w:150, h:147, name:'Спальня 1', sq:18.50 },
-        { x:325, y:20, w:170, h:115, name:'Кухня',     sq:14.50 },
-        { x:325, y:135,w:85,  h:90,  name:'Ванная',    sq:6.00  },
-        { x:410, y:135,w:85,  h:90,  name:'Санузел',   sq:3.80  },
-        { x:325, y:225,w:85,  h:90,  name:'Спальня 2', sq:16.00 },
-        { x:410, y:225,w:85,  h:90,  name:'Спальня 3', sq:14.50 }
+        { x:10,  y:20,  w:150, h:148, name:'Гостиная',  sq:22.00, t:'living'  },
+        { x:10,  y:168, w:150, h:147, name:'Спальня 1', sq:18.50, t:'bed'     },
+        { x:160, y:20,  w:170, h:115, name:'Кухня',     sq:14.50, t:'kitchen' },
+        { x:160, y:135, w:85,  h:90,  name:'Ванная',    sq:6.00,  t:'wet'     },
+        { x:245, y:135, w:85,  h:90,  name:'С/у',       sq:3.80,  t:'wet'     },
+        { x:160, y:225, w:85,  h:90,  name:'Спальня 2', sq:16.00, t:'bed'     },
+        { x:245, y:225, w:85,  h:90,  name:'Спальня 3', sq:14.50, t:'bed'     }
       ]
     };
-    var rms = cfgs[rooms] || cfgs[1];
-    var allX2 = rms.map(function(r){return r.x+r.w;}), allY2 = rms.map(function(r){return r.y+r.h;});
-    var bx = rms[0].x - 3, by = 17, bw = Math.max.apply(null,allX2) - rms[0].x + 6, bh = Math.max.apply(null,allY2) - 17 + 6;
-    var rects = rms.map(function(r){
-      var cx = r.x+r.w/2, cy = r.y+r.h/2;
-      return '<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" fill="#b3e5fc" stroke="#5591c9" stroke-width="1.5"/>'+
-        '<text x="'+cx+'" y="'+(cy-7)+'" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#1a3a5c">'+r.name+'</text>'+
-        '<text x="'+cx+'" y="'+(cy+8)+'" text-anchor="middle" font-size="9" font-family="Inter,sans-serif" fill="#4a6a8c">'+r.sq+'</text>';
+    return cfgs[rooms] || cfgs[1];
+  }
+
+  /* Soft, semantic room palette — cool tones for living, warm for kitchen,
+     teal for wet zones, neutral for circulation. Keeps the plan readable. */
+  var ROOM_FILL = {
+    living:  { fill:'#e8f1ff', stroke:'#b6ccf0' },
+    bed:     { fill:'#eef4ff', stroke:'#c4d4f3' },
+    kitchen: { fill:'#fdf2e3', stroke:'#eccfa0' },
+    wet:     { fill:'#e2f3f4', stroke:'#abd4d8' },
+    hall:    { fill:'#f3f6fb', stroke:'#d7e0ee' }
+  };
+
+  /* ── Clean floor-plan SVG (no embedded legend — that lives in HTML now) ── */
+  function detailFloorSVG(rooms, area) {
+    rooms = parseInt(rooms, 10) || 1;
+    var rms = roomConfig(rooms);
+    var maxX = Math.max.apply(null, rms.map(function(r){ return r.x + r.w; }));
+    var maxY = Math.max.apply(null, rms.map(function(r){ return r.y + r.h; }));
+    var minX = Math.min.apply(null, rms.map(function(r){ return r.x; }));
+    var minY = Math.min.apply(null, rms.map(function(r){ return r.y; }));
+    var pad = 30;
+    var vbW = maxX + pad, vbH = maxY + pad;
+
+    var rects = rms.map(function (r) {
+      var c  = ROOM_FILL[r.t] || ROOM_FILL.living;
+      var cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+      return '<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="2" fill="'+c.fill+'" stroke="'+c.stroke+'" stroke-width="1.5"/>'+
+        '<text x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle" font-size="11" font-weight="600" font-family="Inter,sans-serif" fill="#24375c">'+r.name+'</text>'+
+        '<text x="'+cx+'" y="'+(cy+12)+'" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#6a7c9c">'+r.sq.toFixed(2)+' м²</text>';
     }).join('');
-    var mc = rms[0], cx = mc.x+mc.w/2, cy = mc.y+mc.h/2;
-    var legend =
-      '<text x="14" y="22" font-size="10" font-weight="700" font-family="Inter,sans-serif" fill="#222">Условные обозначения</text>'+
-      '<rect x="14" y="32" width="28" height="5" fill="#e53935"/>'+
-      '<text x="48" y="40" font-size="8" font-family="Inter,sans-serif" fill="#555">каркас монолит</text>'+
-      '<line x1="14" y1="55" x2="42" y2="55" stroke="#888" stroke-width="1.5" stroke-dasharray="4,3"/>'+
-      '<text x="48" y="59" font-size="8" font-family="Inter,sans-serif" fill="#555">внутренние перегородки 100 мм</text>'+
-      '<line x1="14" y1="73" x2="42" y2="73" stroke="#333" stroke-width="2.5"/>'+
-      '<text x="48" y="77" font-size="8" font-family="Inter,sans-serif" fill="#555">основные стены газоблок 200 мм</text>'+
-      '<rect x="14" y="86" width="28" height="8" fill="#b3e5fc" stroke="#5591c9" stroke-width="1"/>'+
-      '<text x="48" y="97" font-size="8" font-family="Inter,sans-serif" fill="#555">межквартирные стены кирпич 250 мм</text>'+
-      '<text x="14" y="120" font-size="10" font-weight="700" font-family="Inter,sans-serif" fill="#222">Высота оконных проёмов</text>'+
-      '<text x="20" y="136" font-size="8" font-family="Inter,sans-serif" fill="#666">тип-1</text>'+
-      '<rect x="14" y="140" width="28" height="38" fill="none" stroke="#555" stroke-width="1"/>'+
-      '<rect x="14" y="140" width="28" height="20" fill="#d4eeff" stroke="#555" stroke-width="1"/>'+
-      '<text x="52" y="136" font-size="8" font-family="Inter,sans-serif" fill="#666">тип-2</text>'+
-      '<rect x="47" y="140" width="28" height="38" fill="none" stroke="#555" stroke-width="1"/>'+
-      '<rect x="47" y="150" width="28" height="28" fill="#d4eeff" stroke="#555" stroke-width="1"/>'+
-      '<text x="14" y="192" font-size="7" font-family="Inter,sans-serif" fill="#888">окно комнат</text>'+
-      '<text x="47" y="192" font-size="7" font-family="Inter,sans-serif" fill="#888">выход на лоджию</text>';
-    return '<svg viewBox="0 0 510 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;background:#fff;border-radius:8px">'+
-      legend + rects +
-      '<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" fill="none" stroke="#e53935" stroke-width="3"/>'+
-      '<circle cx="'+cx+'" cy="'+cy+'" r="32" fill="#1565c0"/>'+
-      '<text x="'+cx+'" y="'+(cy-5)+'" text-anchor="middle" font-size="19" font-weight="800" font-family="Inter,sans-serif" fill="#fff">'+rooms+'</text>'+
-      '<text x="'+cx+'" y="'+(cy+13)+'" text-anchor="middle" font-size="8.5" font-family="Inter,sans-serif" fill="rgba(255,255,255,.9)">'+a.toFixed(2)+'м²</text>'+
+
+    // Building outline
+    var bx = minX - 4, by = minY - 4, bw = (maxX - minX) + 8, bh = (maxY - minY) + 8;
+    var frame = '<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="4" fill="none" stroke="#3b66ff" stroke-width="2.5"/>';
+
+    // Entrance marker on the hall room's bottom edge
+    var hall = rms.filter(function(r){ return r.t === 'hall'; })[0] || rms[rms.length-1];
+    var ex = hall.x + hall.w / 2, ey = hall.y + hall.h;
+    var entrance =
+      '<line x1="'+(ex-13)+'" y1="'+ey+'" x2="'+(ex+13)+'" y2="'+ey+'" stroke="#3b66ff" stroke-width="3" stroke-linecap="round"/>'+
+      '<path d="M'+ex+' '+(ey+18)+' L'+(ex-5)+' '+(ey+9)+' L'+(ex+5)+' '+(ey+9)+' Z" fill="#3b66ff"/>'+
+      '<text x="'+ex+'" y="'+(ey+30)+'" text-anchor="middle" font-size="8.5" font-weight="600" font-family="Inter,sans-serif" fill="#3b66ff">вход</text>';
+
+    // North indicator (top-right)
+    var nx = vbW - 16, ny = 18;
+    var north =
+      '<circle cx="'+nx+'" cy="'+ny+'" r="11" fill="#fff" stroke="#d7e0ee" stroke-width="1"/>'+
+      '<path d="M'+nx+' '+(ny-7)+' L'+(nx-4)+' '+(ny+2)+' L'+(nx+4)+' '+(ny+2)+' Z" fill="#e35d4f"/>'+
+      '<text x="'+nx+'" y="'+(ny+9)+'" text-anchor="middle" font-size="7" font-weight="700" font-family="Inter,sans-serif" fill="#8a95a8">С</text>';
+
+    return '<svg viewBox="0 0 '+vbW+' '+(vbH+22)+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Планировка '+rooms+'-комнатной квартиры" style="width:100%;height:auto;display:block">'+
+      rects + frame + entrance + north +
     '</svg>';
+  }
+
+  /* ── Экспликация: room-by-room area breakdown as clean HTML ── */
+  function aptExplication(rooms, area) {
+    var rms = roomConfig(rooms);
+    var rowsHtml = rms.map(function (r) {
+      return '<li class="pp-expl__row">'+
+        '<span class="pp-expl__dot pp-expl__dot--'+r.t+'"></span>'+
+        '<span class="pp-expl__name">'+r.name+'</span>'+
+        '<span class="pp-expl__area">'+r.sq.toFixed(2)+' м²</span>'+
+      '</li>';
+    }).join('');
+    return '<ul class="pp-expl">'+ rowsHtml +
+      '<li class="pp-expl__row pp-expl__row--total">'+
+        '<span class="pp-expl__name">Общая площадь</span>'+
+        '<span class="pp-expl__area">'+parseFloat(area).toFixed(2)+' м²</span>'+
+      '</li>'+
+    '</ul>';
   }
 
   /* ── Apt card HTML (used in catalog + similar) ── */
   function aptCardHtml(u) {
-    return '<div class="pp-apt-card" data-modal="apt" data-apt-idx="'+u.id+'">'+
-      '<div class="pp-apt-card__hd">'+
-        '<span class="pp-apt-label">'+u.rooms+'-комн. '+u.area.toFixed(2)+' м²</span>'+
-      '</div>'+
-      '<div class="pp-apt-card__tags">'+
-        '<span class="pp-apt-tag pp-apt-tag--cls">'+u.cls+'</span>'+
-        '<span class="pp-apt-tag pp-apt-tag--promo">Акции</span>'+
+    var disc = Math.round((u.oldP - u.price) / u.oldP * 100);
+    return '<button type="button" class="pp-apt-card" data-modal="apt" data-apt-idx="'+u.id+'" '+
+        'aria-label="'+u.rooms+'-комнатная, '+u.area.toFixed(2)+' м², '+fmtU(u.price)+' UZS, подробнее">'+
+      '<div class="pp-apt-card__top">'+
+        '<span class="pp-apt-card__rooms">'+u.rooms+'-комн.</span>'+
+        '<span class="pp-apt-card__sq">'+u.area.toFixed(2)+' м²</span>'+
+        (disc > 0 ? '<span class="pp-apt-card__disc">−'+disc+'%</span>' : '')+
       '</div>'+
       '<div class="pp-apt-card__plan">'+floorSVG(u.rooms)+'</div>'+
-      '<div class="pp-apt-card__pr">'+
-        '<span class="pp-apt-price">'+fmtU(u.price)+' UZS</span>'+
-        '<span class="pp-apt-old">'+fmtU(u.oldP)+' UZS</span>'+
-        '<button class="pp-apt-dots" aria-label="Ещё">'+I.dots+'</button>'+
+      '<div class="pp-apt-card__price">'+fmtU(u.price)+'<span class="pp-apt-card__cur"> UZS</span></div>'+
+      '<div class="pp-apt-card__old">'+fmtU(u.oldP)+' UZS</div>'+
+      '<div class="pp-apt-card__meta">№'+u.no+' · '+u.floor+'/'+u.totF+' эт · '+u.ent+' подъезд</div>'+
+      '<div class="pp-apt-card__foot">'+
+        '<span class="pp-apt-card__proj">'+u.proj+' · '+u.cls+'</span>'+
+        '<span class="pp-apt-card__go">Подробнее '+I.chvR+'</span>'+
       '</div>'+
-      '<div class="pp-apt-card__proj">'+u.proj+' 1 – 2</div>'+
-      '<div class="pp-apt-card__info">№ '+u.no+' | '+u.floor+'/'+u.totF+' этаж | '+u.ent+' подъезд | '+u.due+'</div>'+
-      '<div class="pp-apt-card__cta"><span class="ic ic--flash" style="width:.85em;height:.85em;vertical-align:middle;margin-right:.3em"></span>спецпредложение до 31 декабря</div>'+
+    '</button>';
+  }
+
+  /* ─────────────────────────────────────
+     CATALOG FILTERS — state + live logic
+  ───────────────────────────────────── */
+  var CF = null;                       // current filter state (per catalog open)
+  var CATALOG_PAGE = 8;                // initial + "show more" page size
+
+  function defaultFilter() {
+    return { city:'Ташкент', type:'Квартира', rooms:[], priceMin:null, priceMax:null,
+             dueSel:[], areaMin:null, areaMax:null, sort:'', view:'grid', shown:CATALOG_PAGE };
+  }
+  function mln(uzs) { return Math.round(uzs / 1e6); }
+
+  function plural(n, one, few, many) {
+    var m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+    return many;
+  }
+
+  /* Apply the active filter state to UNITS, then sort. */
+  function catalogList() {
+    var list = UNITS.filter(function (u) {
+      if (CF.city && CF.city !== 'Ташкент') return false;          // only Tashkent in data
+      if (CF.type && CF.type !== 'Квартира') return false;         // only apartments in data
+      if (CF.rooms.length && CF.rooms.indexOf(u.rooms) < 0) return false;
+      if (CF.priceMin != null && u.price < CF.priceMin) return false;
+      if (CF.priceMax != null && u.price > CF.priceMax) return false;
+      if (CF.areaMin  != null && u.area  < CF.areaMin)  return false;
+      if (CF.areaMax  != null && u.area  > CF.areaMax)  return false;
+      if (CF.dueSel.length && CF.dueSel.indexOf(u.due) < 0) return false;
+      return true;
+    });
+    var k = CF.sort;
+    return list.sort(function (a, b) {
+      if (k === 'due') return a.due.localeCompare(b.due);
+      if (k === 'price-asc') return a.price - b.price;
+      if (k === 'price-desc') return b.price - a.price;
+      return a.id - b.id;
+    });
+  }
+
+  /* Re-render grid, counter, progress, "show more" + empty state from CF. */
+  function renderCatalog() {
+    var grid = pBody.querySelector('#aptGrid');
+    if (!grid) return;
+    var list  = catalogList();
+    var total = list.length;
+    var shown = Math.min(CF.shown, total);
+
+    grid.innerHTML = list.slice(0, shown).map(aptCardHtml).join('');
+    grid.classList.toggle('pp-apt-grid--chess', CF.view === 'chess');
+    grid.hidden = total === 0;
+
+    var empty = pBody.querySelector('.pp-catalog-empty');
+    if (empty) empty.hidden = total > 0;
+
+    var countEl = pBody.querySelector('.pp-catalog-count');
+    if (countEl) countEl.textContent = total ? ('Показано ' + shown + ' из ' + total) : 'Ничего не найдено';
+    var fill = pBody.querySelector('.pp-prog__fill');
+    if (fill) fill.style.width = (total ? Math.round(shown / total * 100) : 0) + '%';
+    var more = pBody.querySelector('.pp-catalog-more');
+    if (more) more.style.display = shown < total ? '' : 'none';
+    var badge = pBody.querySelector('.pp-catalog-badge');
+    if (badge) badge.textContent = total + ' ' + plural(total, 'планировка', 'планировки', 'планировок');
+
+    updateFilterUI(total);
+  }
+
+  /* Count how many filter groups are active (city is fixed, so excluded). */
+  function activeFilterCount() {
+    var n = 0;
+    if (CF.type !== 'Квартира') n++;
+    if (CF.rooms.length) n++;
+    if (CF.priceMin != null || CF.priceMax != null) n++;
+    if (CF.areaMin != null || CF.areaMax != null) n++;
+    if (CF.dueSel.length) n++;
+    return n;
+  }
+
+  /* Update the toolbar filter button badge + the modal's apply-button count. */
+  function updateFilterUI(total) {
+    if (total == null) total = catalogList().length;
+    var n = activeFilterCount();
+    var fbtn = pBody.querySelector('.pp-filter-btn');
+    if (fbtn) fbtn.classList.toggle('pp-filter-btn--on', n > 0);
+    var cnt = pBody.querySelector('.pp-filter-count');
+    if (cnt) { cnt.textContent = n; cnt.hidden = n === 0; }
+    var apply = pBody.querySelector('.pp-fmodal__apply');
+    if (apply) apply.textContent = total
+      ? ('Показать ' + total + ' ' + plural(total, 'вариант', 'варианта', 'вариантов'))
+      : 'Ничего не найдено';
+  }
+
+  function openFilterModal() {
+    var m = pBody.querySelector('.pp-fmodal');
+    if (!m) return;
+    m.hidden = false;
+    requestAnimationFrame(function () { m.classList.add('is-open'); });
+  }
+  function closeFilterModal() {
+    var m = pBody.querySelector('.pp-fmodal');
+    if (!m) return;
+    m.classList.remove('is-open');
+    setTimeout(function () { m.hidden = true; }, 220);
+  }
+
+  function resetCatalog() {
+    var sort = CF.sort, view = CF.view;
+    CF = defaultFilter(); CF.sort = sort; CF.view = view;
+    pBody.querySelectorAll('.pp-dd-input').forEach(function (i) { i.value = ''; });
+    pBody.querySelectorAll('.pp-dd-chip').forEach(function (c) { c.classList.remove('pp-dd-chip--on'); });
+    pBody.querySelectorAll('.pp-dd-due').forEach(function (c) { c.checked = false; });
+    pBody.querySelectorAll('.pp-dd-room').forEach(function (b) { b.classList.remove('pp-dd-room--on'); });
+    var qt = pBody.querySelector('input[name="ddType"][value="Квартира"]'); if (qt) qt.checked = true;
+    var qc = pBody.querySelector('input[name="ddCity"][value="Ташкент"]'); if (qc) qc.checked = true;
+    renderCatalog();
+  }
+
+  /* On catalog open, push any preset (e.g. rooms) onto the modal controls. */
+  function syncFilterUI() {
+    if (!CF || !pBody.querySelector('.pp-fmodal')) return;
+    CF.rooms.forEach(function (r) {
+      var b = pBody.querySelector('.pp-dd-room[data-room="' + r + '"]');
+      if (b) b.classList.add('pp-dd-room--on');
+    });
+    var aMin = pBody.querySelector('#ddAreaMin'), aMax = pBody.querySelector('#ddAreaMax');
+    if (aMin && CF.areaMin != null) aMin.value = CF.areaMin;
+    if (aMax && CF.areaMax != null) aMax.value = CF.areaMax;
+    var pMin = pBody.querySelector('#ddPriceMin'), pMax = pBody.querySelector('#ddPriceMax');
+    if (pMin && CF.priceMin != null) pMin.value = mln(CF.priceMin);
+    if (pMax && CF.priceMax != null) pMax.value = mln(CF.priceMax);
+    updateFilterUI();
+  }
+
+  /* Build the filter modal (all filters inside one dialog). */
+  function catalogFilterModalHtml() {
+    var dues = UNITS.map(function (u) { return u.due; })
+                    .filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
+    var dueRows = dues.map(function (d) {
+      return '<label class="pp-dd-check"><input type="checkbox" class="pp-dd-due" value="' + d + '"><span>Сдача ' + d + '</span></label>';
+    }).join('');
+    var roomChips = [1,2,3,4].map(function (r) {
+      return '<button type="button" class="pp-dd-room" data-room="'+r+'">'+r+'-комн.</button>';
+    }).join('');
+
+    function grp(title, body) {
+      return '<div class="pp-fgroup"><div class="pp-fgroup__t">'+title+'</div>'+body+'</div>';
+    }
+
+    return '<div class="pp-fmodal" hidden>'+
+      '<div class="pp-fmodal__backdrop" data-fclose></div>'+
+      '<div class="pp-fmodal__sheet" role="dialog" aria-modal="true" aria-label="Фильтры">'+
+        '<div class="pp-fmodal__head">'+
+          '<h3 class="pp-fmodal__title">Фильтры</h3>'+
+          '<button type="button" class="pp-fmodal__close" data-fclose aria-label="Закрыть">'+I.close+'</button>'+
+        '</div>'+
+        '<div class="pp-fmodal__body">'+
+          grp('Город',
+            '<div class="pp-fradios">'+
+              '<label class="pp-dd-radio"><input type="radio" name="ddCity" value="Ташкент" checked><span>Ташкент</span></label>'+
+            '</div>'+
+            '<div class="pp-dd-hint">Другие города — скоро</div>')+
+          grp('Тип недвижимости',
+            '<div class="pp-fradios">'+
+              '<label class="pp-dd-radio"><input type="radio" name="ddType" value="Квартира" checked><span>Квартира</span></label>'+
+              '<label class="pp-dd-radio"><input type="radio" name="ddType" value="Офис"><span>Офис</span></label>'+
+              '<label class="pp-dd-radio"><input type="radio" name="ddType" value="Коммерция"><span>Коммерческое</span></label>'+
+            '</div>')+
+          grp('Комнатность', '<div class="pp-dd-rooms">'+roomChips+'</div>')+
+          grp('Цена, млн UZS',
+            '<div class="pp-dd-range">'+
+              '<input class="pp-dd-input" id="ddPriceMin" type="number" inputmode="numeric" placeholder="от" min="0">'+
+              '<span class="pp-dd-dash">—</span>'+
+              '<input class="pp-dd-input" id="ddPriceMax" type="number" inputmode="numeric" placeholder="до" min="0">'+
+            '</div>'+
+            '<div class="pp-dd-presets pp-price-presets">'+
+              '<button type="button" class="pp-dd-chip" data-pmin="" data-pmax="900">до 900</button>'+
+              '<button type="button" class="pp-dd-chip" data-pmin="900" data-pmax="1500">900–1500</button>'+
+              '<button type="button" class="pp-dd-chip" data-pmin="1500" data-pmax="">от 1500</button>'+
+            '</div>')+
+          grp('Площадь, м²',
+            '<div class="pp-dd-range">'+
+              '<input class="pp-dd-input" id="ddAreaMin" type="number" inputmode="numeric" placeholder="от" min="0">'+
+              '<span class="pp-dd-dash">—</span>'+
+              '<input class="pp-dd-input" id="ddAreaMax" type="number" inputmode="numeric" placeholder="до" min="0">'+
+            '</div>')+
+          grp('Срок сдачи', '<div class="pp-fchecks">'+dueRows+'</div>')+
+        '</div>'+
+        '<div class="pp-fmodal__foot">'+
+          '<button type="button" class="pp-freset">Сбросить всё</button>'+
+          '<button type="button" class="pp-fmodal__apply">Показать варианты</button>'+
+        '</div>'+
+      '</div>'+
     '</div>';
   }
 
   /* Catalog page */
   function tplCatalogPage(filterRooms) {
-    var units = filterRooms ? UNITS.filter(function(u){ return u.rooms === filterRooms; }) : UNITS;
-    var shown = Math.min(8, units.length);
-    var cards = units.slice(0, shown).map(aptCardHtml).join('');
+    CF = defaultFilter();
+    if (filterRooms) CF.rooms = [filterRooms];
+    var list  = catalogList();
+    var total = list.length;
+    var shown = Math.min(CF.shown, total);
+    var cards = list.slice(0, shown).map(aptCardHtml).join('');
+
     return '<div class="pp-catalog-wrap">'+
-      '<h1 class="pp-catalog-title">Выбрать квартиру</h1>'+
-      '<div class="pp-catalog-filters">'+
-        '<button class="pp-fbtn pp-fbtn--on" data-filter="city">Ташкент '+I.chvD+'</button>'+
-        '<button class="pp-fbtn pp-fbtn--on" data-filter="type">Квартира '+I.chvD+'</button>'+
-        '<button class="pp-fbtn" data-filter="price">Цена '+I.chvD+'</button>'+
-        '<button class="pp-fbtn" data-filter="due">Время сдачи '+I.chvD+'</button>'+
-        '<button class="pp-fbtn pp-fbtn--all" data-filter="all">'+I.flt+' Все фильтры</button>'+
-        '<button class="pp-freset">Сбросить</button>'+
+      '<div class="pp-catalog-head">'+
+        '<h1 class="pp-catalog-title">Выбрать квартиру</h1>'+
+        '<span class="pp-catalog-badge">'+total+' '+plural(total, 'планировка', 'планировки', 'планировок')+'</span>'+
       '</div>'+
       '<div class="pp-catalog-toolbar">'+
-        '<div class="pp-sorts">'+
-          '<button class="pp-sbtn pp-sbtn--on" data-sort="">Без сортировки '+I.chvD+'</button>'+
-          '<button class="pp-sbtn" data-sort="due">Очередь '+I.chvD+'</button>'+
-          '<button class="pp-sbtn" data-sort="price-asc">По цене '+I.chvD+'</button>'+
+        '<div class="pp-sort">'+
+          '<span class="pp-sort__label">Сортировка</span>'+
+          '<div class="pp-seg pp-sorts" role="group" aria-label="Сортировка">'+
+            '<button class="pp-sbtn pp-sbtn--on" data-sort="">По умолчанию</button>'+
+            '<button class="pp-sbtn" data-sort="due">Срок сдачи</button>'+
+            '<button class="pp-sbtn" data-sort="price-asc">Цена ↑</button>'+
+            '<button class="pp-sbtn" data-sort="price-desc">Цена ↓</button>'+
+          '</div>'+
         '</div>'+
-        '<div class="pp-views">'+
-          '<button class="pp-vbtn pp-vbtn--on" data-view="grid" title="Плитка">'+I.grid+'</button>'+
-          '<button class="pp-vbtn" data-view="chess" title="Шахматка">'+I.chess+'</button>'+
+        '<div class="pp-toolbar-right">'+
+          '<button type="button" class="pp-filter-btn" aria-haspopup="dialog">'+I.flt+'<span>Фильтры</span><span class="pp-filter-count" hidden>0</span></button>'+
         '</div>'+
       '</div>'+
       '<div class="pp-proj-banner" style="background-image:linear-gradient(to right,rgba(0,0,0,.65) 0%,rgba(0,0,0,.2) 60%,rgba(0,0,0,.4) 100%),url(https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1200&q=80)">'+
@@ -750,16 +1088,23 @@ function calcMortgage() {
           '<span class="badge">Бизнес</span>'+
         '</div>'+
         '<div class="pp-proj-banner__r">'+
-          '<button class="btn btn--ghost btn--sm" id="catalogCb">'+I.call+' Оставить заявку</button>'+
-          '<button class="btn btn--ghost btn--sm" id="catalogProjBtn">'+I.bld+' Подробнее о ЖК</button>'+
+          '<button class="btn btn--ghost btn--sm" id="catalogCb">'+'<span class="ic ic--call"></span>'+' Оставить заявку</button>'+
+          '<button class="btn btn--ghost btn--sm" id="catalogProjBtn">'+'<span class="ic ic--buildings"></span>'+' Подробнее о ЖК</button>'+
         '</div>'+
       '</div>'+
       '<div class="pp-apt-grid" id="aptGrid">'+cards+'</div>'+
-      '<div class="pp-catalog-paging">'+
-        '<span class="pp-catalog-count">Показано '+shown+' из '+units.length+'</span>'+
-        '<div class="pp-prog"><div class="pp-prog__fill" style="width:'+Math.round(shown/Math.max(units.length,1)*100)+'%"></div></div>'+
+      '<div class="pp-catalog-empty" hidden>'+
+        '<div class="pp-catalog-empty__icon">'+I.flt+'</div>'+
+        '<div class="pp-catalog-empty__t">Ничего не найдено</div>'+
+        '<p class="pp-catalog-empty__p">Попробуйте смягчить условия фильтра или сбросьте их.</p>'+
+        '<button type="button" class="btn btn--outline pp-empty-reset">Сбросить фильтры</button>'+
       '</div>'+
-      (shown < units.length ? '<button class="btn btn--outline btn--block pp-catalog-more">Показать ещё</button>' : '')+
+      '<div class="pp-catalog-paging">'+
+        '<span class="pp-catalog-count">Показано '+shown+' из '+total+'</span>'+
+        '<div class="pp-prog"><div class="pp-prog__fill" style="width:'+(total?Math.round(shown/total*100):0)+'%"></div></div>'+
+      '</div>'+
+      '<button class="btn btn--outline btn--block pp-catalog-more"'+(shown<total?'':' style="display:none"')+'>Показать ещё</button>'+
+      catalogFilterModalHtml()+
     '</div>';
   }
 /* Apartment detail page */
@@ -780,15 +1125,36 @@ function calcMortgage() {
             '<span class="pp-infobar-tag">Сдача '+u.due+'</span>'+
             '<button class="pp-apt-detail__proj-btn" data-uid="'+u.id+'">Подробнее о ЖК '+I.chvR+'</button>'+
           '</div>'+
-          '<div class="pp-finish-tabs">'+
-            '<button class="pp-finish-tab pp-finish-tab--on">Черновая отделка</button>'+
-            '<button class="pp-finish-tab">Чистовая отделка</button>'+
+          '<div class="pp-plan-bar">'+
+            '<div class="pp-plan-bar__id">'+
+              '<span class="pp-plan-bar__rooms">'+u.rooms+'-комнатная</span>'+
+              '<span class="pp-plan-bar__sq">'+u.area.toFixed(2)+' м²</span>'+
+            '</div>'+
+            '<div class="pp-finish-tabs" role="tablist" aria-label="Тип отделки">'+
+              '<button class="pp-finish-tab pp-finish-tab--on" role="tab" aria-selected="true" data-note="Бетонная стяжка, разводка электрики и сантехники, оштукатуренные стены. Готово под ваш ремонт.">Черновая</button>'+
+              '<button class="pp-finish-tab" role="tab" aria-selected="false" data-note="Под ключ: чистовые полы, обои или покраска, межкомнатные двери, установленная сантехника и розетки.">Чистовая</button>'+
+            '</div>'+
           '</div>'+
+          '<p class="pp-finish-note" id="finishNote">Бетонная стяжка, разводка электрики и сантехники, оштукатуренные стены. Готово под ваш ремонт.</p>'+
           '<div class="pp-apt-detail__plan">'+detailFloorSVG(u.rooms, u.area)+'</div>'+
+          '<div class="pp-plan-facts">'+
+            '<div class="pp-fact"><span class="pp-fact__label">Этаж</span><span class="pp-fact__val">'+u.floor+'/'+u.totF+'</span></div>'+
+            '<div class="pp-fact"><span class="pp-fact__label">Потолки</span><span class="pp-fact__val">3,0 м</span></div>'+
+            '<div class="pp-fact"><span class="pp-fact__label">Подъезд</span><span class="pp-fact__val">'+u.ent+'</span></div>'+
+            '<div class="pp-fact"><span class="pp-fact__label">Сдача</span><span class="pp-fact__val">'+u.due+'</span></div>'+
+          '</div>'+
+          '<div class="pp-expl-wrap">'+
+            '<div class="pp-expl-title">Экспликация помещений</div>'+
+            aptExplication(u.rooms, u.area)+
+          '</div>'+
         '</div>'+
         '<div class="pp-apt-detail__right">'+
-          '<div class="pp-apt-detail__price">'+fmtU(u.price)+' UZS</div>'+
-          '<div class="pp-apt-detail__oldprice">'+fmtU(u.oldP)+' UZS</div>'+
+          '<div class="pp-apt-detail__price">'+fmtU(u.price)+'<span class="pp-apt-detail__cur"> UZS</span></div>'+
+          '<div class="pp-price-row">'+
+            '<span class="pp-apt-detail__oldprice">'+fmtU(u.oldP)+' UZS</span>'+
+            '<span class="pp-disc-badge">−'+Math.round((u.oldP-u.price)/u.oldP*100)+'%</span>'+
+          '</div>'+
+          '<div class="pp-save"><span class="ic ic--flash"></span>Выгода '+fmtU(u.oldP-u.price)+' UZS</div>'+
           '<p class="pp-apt-detail__price-note">Стоимость дополнительных опций включается в итоговую стоимость квартиры</p>'+
           '<button class="pp-apt-option" data-option="repair">'+
             '<span class="pp-apt-option__ic"><span class="ic ic--clipboard" style="width:1.1em;height:1.1em;color:var(--brand-600)"></span></span>'+
@@ -816,7 +1182,7 @@ function calcMortgage() {
             '<div class="pp-payment-label">Банки-партнёры · одобрение за 3 дня</div>'+
             '<div class="pp-payment-sub">Первый взнос от 20% · срок до 25 лет</div>'+
           '</div>'+
-          '<button class="btn btn--primary btn--lg btn--block" id="aptBuyBtn">'+I.call+' Купить онлайн</button>'+
+          '<button class="btn btn--primary btn--lg btn--block" id="aptBuyBtn">'+'<span class="ic ic--call"></span>'+' Купить онлайн</button>'+
           '<button class="btn btn--outline btn--lg btn--block pp-apt-book" id="aptBookBtn">Забронировать</button>'+
         '</div>'+
       '</div>'+
@@ -836,8 +1202,8 @@ function calcMortgage() {
           '<span class="badge">'+u.cls+'</span>'+
         '</div>'+
         '<div class="pp-proj-banner__r">'+
-          '<button class="btn btn--ghost btn--sm" id="aptBannerCb">'+I.call+' Оставить заявку</button>'+
-          '<button class="btn btn--ghost btn--sm" data-uid="'+u.id+'" id="aptBannerProjBtn">'+I.bld+' Подробнее о ЖК</button>'+
+          '<button class="btn btn--ghost btn--sm" id="aptBannerCb">'+'<span class="ic ic--call"></span>'+' Оставить заявку</button>'+
+          '<button class="btn btn--ghost btn--sm" data-uid="'+u.id+'" id="aptBannerProjBtn">'+'<span class="ic ic--buildings"></span>'+' Подробнее о ЖК</button>'+
         '</div>'+
       '</div>'+
       '<div class="pp-room-prices">'+
@@ -890,6 +1256,7 @@ function calcMortgage() {
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (!mOverlay.hidden) closeModal();
+    else if (!panel.hidden && pBody.querySelector('.pp-fmodal:not([hidden])')) closeFilterModal();
     else if (!panel.hidden) goBack();
   });
 
